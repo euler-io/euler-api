@@ -1,0 +1,167 @@
+openapi: 3.0.0
+info:
+  version: 0.1.0-SNAPSHOT
+  title: Euler API
+  description: HTTP API for the Euler File Processing API.
+  license:
+    name: GNU Lesser General Public License v3.0
+    url: https://www.gnu.org/licenses/lgpl-3.0.en.html
+components:
+  schemas:
+    JobStatus:
+      type: string
+      enum:
+        - NEW
+        - ENQUEUED
+        - RUNNING
+        - ERROR
+        - CANCELLED
+        - FINISHED
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        start-date:
+          type: string
+          format: date-time
+        end-date:
+          type: string
+          format: date-time
+    JobStatistics:
+      type: object
+      properties:
+        items-found:
+          type: integer
+        items-processed:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+    JobDetails:
+      allOf:
+        - $ref: '#/components/schemas/Job'
+        - type: object
+      
+paths:
+  /jobs:
+    get:
+      summary: Get a list of jobs.
+      operationId: listJobs
+      responses:
+        '200':
+          description: A JSON array of jobs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+  /job:
+    put:
+      summary: Create a new job.
+      operationId: createNewJob
+      requestBody:
+        description: The JSON describing the job.
+        required: true
+        content:
+          application/json:
+            schema:
+              description: The JSON describing the job.
+              type: object
+      responses:
+        '200':
+          description: A JSON of the new job.
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Job'
+        '400':
+          description: Error creating the job.
+  '/job/{jobId}':
+    get:
+      summary: Get the details of the job.
+      operationId: getJobsDetails
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: The job id.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A JSON of the job details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobDetails'
+        '404':
+          description: Job not found
+    post:
+      summary: Change the status of the job.
+      operationId: changeJobStatus
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: The job id.
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: true
+          description: The new status of the job.
+          schema:
+            $ref: '#/components/schemas/JobStatus'
+      responses:
+        '200':
+          description: A JSON of the modified job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '400':
+          description: When the new status is unacceptable.
+        '404':
+          description: Job not found
+    delete:
+      summary: Delete the job.
+      operationId: deleteJob
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: The job id.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HTTP status code of the current operation.
+        '404':
+          description: Job not found
+
+  '/statistics/{jobId}':
+    get:
+      summary: Get a list of statistics about the job.
+      operationId: getJobsStatistics
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: The job id.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A JSON of the job details.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobStatistics'
+        '404':
+          description: Job not found
