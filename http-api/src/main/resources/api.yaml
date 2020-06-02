@@ -44,6 +44,9 @@ components:
       allOf:
         - $ref: '#/components/schemas/Job'
         - type: object
+        - properties:
+            config:
+              type: object
       
 paths:
   /jobs:
@@ -118,11 +121,7 @@ paths:
             $ref: '#/components/schemas/JobStatus'
       responses:
         '200':
-          description: A JSON of the modified job.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Job'
+          description: HTTP status code of the current operation.
         '400':
           description: When the new status is unacceptable.
         '404':

@@ -1,5 +1,6 @@
 package com.github.euler.api.handler;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,12 @@ public class JobsApiDelegateImpl implements JobsApiDelegate {
 
     @Override
     public ResponseEntity<List<Job>> listJobs() {
-        List<Job> list = persistence.list();
+        List<Job> list;
+        try {
+            list = persistence.list();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return new ResponseEntity<List<Job>>(list, HttpStatus.OK);
     }
 
