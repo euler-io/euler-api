@@ -1,6 +1,7 @@
 package com.github.euler.api.handler;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.euler.api.APICommand;
+import com.github.euler.api.JobToEnqueue;
 import com.github.euler.api.model.Job;
 import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.JobStatus;
@@ -19,16 +22,20 @@ import com.github.euler.api.persistence.JobPersistence;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import akka.actor.typed.ActorSystem;
+
 @Service
 public class JobApiDelegateImpl implements JobApiDelegate {
 
+    private final ActorSystem<APICommand> system;
     private final JobPersistence jobPersistence;
     private final JobDetailsPersistence jobDetailsPersistence;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public JobApiDelegateImpl(JobPersistence jobPersistence, JobDetailsPersistence jobDetailsPersistence, ObjectMapper objectMapper) {
+    public JobApiDelegateImpl(ActorSystem<APICommand> system, JobPersistence jobPersistence, JobDetailsPersistence jobDetailsPersistence, ObjectMapper objectMapper) {
         super();
+        this.system = system;
         this.jobPersistence = jobPersistence;
         this.jobDetailsPersistence = jobDetailsPersistence;
         this.objectMapper = objectMapper;
@@ -38,7 +45,7 @@ public class JobApiDelegateImpl implements JobApiDelegate {
     public ResponseEntity<Job> createNewJob(Object config) {
         String id = UUID.randomUUID().toString();
         try {
-            startJob(id, config);
+            enqueueJob(id, config);
             JobDetails jobDetails = new JobDetails();
             jobDetails.setId(id);
             jobDetails.setStartDate(OffsetDateTime.now());
@@ -52,10 +59,12 @@ public class JobApiDelegateImpl implements JobApiDelegate {
         }
     }
 
-    protected void startJob(String id, Object raw) throws JsonProcessingException {
+    protected void enqueueJob(String id, Object raw) throws JsonProcessingException {
         String json = objectMapper.writer().writeValueAsString(raw);
         Config config = ConfigFactory.parseString(json);
-        System.out.println(config);
+        URI uri = null;
+        JobToEnqueue msg = new JobToEnqueue(id, uri, config);
+        system.tell(msg);
     }
 
     protected void stopJob(String id) {

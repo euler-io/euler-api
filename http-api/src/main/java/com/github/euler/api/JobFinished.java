@@ -12,4 +12,9 @@ public class JobFinished implements APICommand {
         this.uri = uri;
     }
 
+    public JobFinished(APIJobProcessed msg) {
+        this.id = msg.id;
+        this.uri = msg.uri;
+    }
+
 }

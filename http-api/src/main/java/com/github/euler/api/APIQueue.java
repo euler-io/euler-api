@@ -30,8 +30,9 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     private final EulerConfigConverter converter;
     private final ActorRef<JobCommand> responseAdaptor;
 
-    private APIQueueState state;
     private StashBuffer<APICommand> stash;
+
+    private APIQueueState state;
 
     private APIQueue(ActorContext<APICommand> context, int maxJobs, StashBuffer<APICommand> stash, JobPersistence persistence, EulerConfigConverter converter) {
         super(context);
@@ -53,14 +54,15 @@ public class APIQueue extends AbstractBehavior<APICommand> {
 
     public Behavior<APICommand> onJobToEnqueue(JobToEnqueue msg) throws IOException {
         state.enqueue(msg);
-        processNext();
+        processOrStash(msg);
         return this;
     }
 
-    private void processNext() throws IOException {
-        JobToEnqueue msg = state.getHead();
-        if (msg != null && state.getNumRunning() < this.maxJobs) {
+    private void processOrStash(JobToEnqueue msg) throws IOException {
+        if (isSpotAvailable()) {
             process(msg);
+        } else {
+            stash.stash(msg);
         }
     }
 
@@ -87,11 +89,19 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     }
 
     private Behavior<APICommand> onJobProcessed(APIJobProcessed msg) throws IOException {
-        JobToEnqueue original = state.processed(msg);
         persistence.updateStatus(msg.id, JobStatus.FINISHED);
-        original.replyTo.tell(new JobFinished(msg.id, msg.uri));
-        processNext();
+        JobToEnqueue original = state.processed(msg);
+        if (original.replyTo != null) {
+            original.replyTo.tell(new JobFinished(msg));
+        }
+        if (isSpotAvailable()) {
+            stash.unstash(this, 1, (m) -> m);
+        }
         return this;
+    }
+
+    private boolean isSpotAvailable() {
+        return this.state.getNumRunning() < this.maxJobs;
     }
 
     private static class InternalAdaptedJobCommand implements APICommand {

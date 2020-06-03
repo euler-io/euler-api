@@ -21,4 +21,12 @@ public class JobToEnqueue implements APICommand {
         this.replyTo = replyTo;
     }
 
+    public JobToEnqueue(String jobId, URI uri, Config config) {
+        super();
+        this.jobId = jobId;
+        this.uri = uri;
+        this.config = config;
+        this.replyTo = null;
+    }
+
 }
