@@ -15,13 +15,14 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
+import akka.actor.typed.javadsl.StashBuffer;
 
 public class APIQueue extends AbstractBehavior<APICommand> {
 
     private static final String EULER = "euler-";
 
-    public static Behavior<APICommand> create(int maxJobs, JobPersistence persistence, EulerConfigConverter converter) {
-        return Behaviors.setup((ctx) -> new APIQueue(ctx, maxJobs, persistence, converter));
+    public static Behavior<APICommand> create(int maxJobs, int capacity, JobPersistence persistence, EulerConfigConverter converter) {
+        return Behaviors.withStash(capacity, stash -> Behaviors.setup((ctx) -> new APIQueue(ctx, maxJobs, stash, persistence, converter)));
     }
 
     private int maxJobs;
@@ -30,10 +31,12 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     private final ActorRef<JobCommand> responseAdaptor;
 
     private APIQueueState state;
+    private StashBuffer<APICommand> stash;
 
-    private APIQueue(ActorContext<APICommand> context, int maxJobs, JobPersistence persistence, EulerConfigConverter converter) {
+    private APIQueue(ActorContext<APICommand> context, int maxJobs, StashBuffer<APICommand> stash, JobPersistence persistence, EulerConfigConverter converter) {
         super(context);
         this.maxJobs = maxJobs;
+        this.stash = stash;
         this.persistence = persistence;
         this.converter = converter;
         this.responseAdaptor = context.messageAdapter(JobCommand.class, InternalAdaptedJobCommand::new);
@@ -50,15 +53,23 @@ public class APIQueue extends AbstractBehavior<APICommand> {
 
     public Behavior<APICommand> onJobToEnqueue(JobToEnqueue msg) throws IOException {
         state.enqueue(msg);
-        process(msg);
-        persistence.updateStatus(msg.jobId, JobStatus.RUNNING);
+        processNext();
         return this;
     }
 
-    private void process(JobToEnqueue msg) {
+    private void processNext() throws IOException {
+        JobToEnqueue msg = state.getHead();
+        if (msg != null && state.getNumRunning() < this.maxJobs) {
+            process(msg);
+        }
+    }
+
+    private void process(JobToEnqueue msg) throws IOException {
         ActorRef<JobCommand> ref = spawn(msg.jobId, msg.config);
         APIJob jobMsg = new APIJob(msg.jobId, msg.uri, responseAdaptor);
         ref.tell(jobMsg);
+        state.running();
+        persistence.updateStatus(msg.jobId, JobStatus.RUNNING);
     }
 
     private ActorRef<JobCommand> spawn(String jobId, Config config) {
@@ -79,6 +90,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         JobToEnqueue original = state.processed(msg);
         persistence.updateStatus(msg.id, JobStatus.FINISHED);
         original.replyTo.tell(new JobFinished(msg.id, msg.uri));
+        processNext();
         return this;
     }
 
