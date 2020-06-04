@@ -14,7 +14,7 @@ public class APIQueueState {
 
     public JobToEnqueue processed(APIJobProcessed msg) {
         this.numRunning--;
-        return mapping.remove(msg.id);
+        return mapping.remove(msg.jobId);
     }
 
     public void running() {

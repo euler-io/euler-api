@@ -24,7 +24,7 @@ public class APIJobExecutionTest extends AkkaTest {
         ActorRef<JobCommand> ref = testKit.spawn(APIJobExecution.create(Sources.emptyBehavior(), Behaviors.empty()));
         ref.tell(msg);
         APIJobProcessed resp = probe.expectMessageClass(APIJobProcessed.class);
-        assertEquals(jobId, resp.id);
+        assertEquals(jobId, resp.jobId);
     }
 
 }

@@ -2,17 +2,18 @@ package com.github.euler.api;
 
 import java.net.URI;
 
-public class JobFinished implements APICommand {
+public class JobEnqueued implements APICommand {
 
     public final String jobId;
     public final URI uri;
 
-    public JobFinished(String jobId, URI uri) {
-        this.jobId = jobId;
+    public JobEnqueued(String id, URI uri) {
+        super();
+        this.jobId = id;
         this.uri = uri;
     }
 
-    public JobFinished(APIJobProcessed msg) {
+    public JobEnqueued(JobToEnqueue msg) {
         this.jobId = msg.jobId;
         this.uri = msg.uri;
     }

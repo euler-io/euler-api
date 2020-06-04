@@ -47,6 +47,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     @Override
     public Receive<APICommand> createReceive() {
         ReceiveBuilder<APICommand> builder = newReceiveBuilder();
+        builder.onMessage(InternalJobToProcess.class, this::onJobToProcess);
         builder.onMessage(JobToEnqueue.class, this::onJobToEnqueue);
         builder.onMessage(InternalAdaptedJobCommand.class, this::onInternalAdaptedEulerCommand);
         return builder.build();
@@ -54,6 +55,15 @@ public class APIQueue extends AbstractBehavior<APICommand> {
 
     public Behavior<APICommand> onJobToEnqueue(JobToEnqueue msg) throws IOException {
         state.enqueue(msg);
+        persistence.updateStatus(msg.jobId, JobStatus.ENQUEUED);
+        if (msg.replyTo != null) {
+            msg.replyTo.tell(new JobEnqueued(msg));
+        }
+        processOrStash(msg);
+        return this;
+    }
+
+    public Behavior<APICommand> onJobToProcess(InternalJobToProcess msg) throws IOException {
         processOrStash(msg);
         return this;
     }
@@ -89,19 +99,27 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     }
 
     private Behavior<APICommand> onJobProcessed(APIJobProcessed msg) throws IOException {
-        persistence.updateStatus(msg.id, JobStatus.FINISHED);
+        persistence.updateStatus(msg.jobId, JobStatus.FINISHED);
         JobToEnqueue original = state.processed(msg);
         if (original.replyTo != null) {
             original.replyTo.tell(new JobFinished(msg));
         }
         if (isSpotAvailable()) {
-            stash.unstash(this, 1, (m) -> m);
+            stash.unstash(this, 1, (m) -> new InternalJobToProcess((JobToEnqueue) m));
         }
         return this;
     }
 
     private boolean isSpotAvailable() {
         return this.state.getNumRunning() < this.maxJobs;
+    }
+
+    private static class InternalJobToProcess extends JobToEnqueue {
+
+        public InternalJobToProcess(JobToEnqueue msg) {
+            super(msg.jobId, msg.uri, msg.config, msg.replyTo);
+        }
+
     }
 
     private static class InternalAdaptedJobCommand implements APICommand {

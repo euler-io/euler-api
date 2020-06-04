@@ -33,6 +33,7 @@ public class APIQueueTest extends AkkaTest {
 
         // mocking
         JobPersistence persistence = mock(JobPersistence.class);
+        persistence.updateStatus(eq(jobId), eq(JobStatus.ENQUEUED));
         persistence.updateStatus(eq(jobId), eq(JobStatus.RUNNING));
         persistence.updateStatus(eq(jobId), eq(JobStatus.FINISHED));
 
@@ -41,9 +42,11 @@ public class APIQueueTest extends AkkaTest {
         JobToEnqueue msg = new JobToEnqueue(jobId, new URI("file:///some/path"), config, probe.ref());
         ref.tell(msg);
 
+        probe.expectMessageClass(JobEnqueued.class);
         probe.expectMessageClass(JobFinished.class);
 
         // verify mock
+        verify(persistence).updateStatus(eq(jobId), eq(JobStatus.ENQUEUED));
         verify(persistence).updateStatus(eq(jobId), eq(JobStatus.RUNNING));
         verify(persistence).updateStatus(eq(jobId), eq(JobStatus.FINISHED));
     }
@@ -60,8 +63,10 @@ public class APIQueueTest extends AkkaTest {
 
         // mocking
         JobPersistence persistence = mock(JobPersistence.class);
+        persistence.updateStatus(eq(jobId1), eq(JobStatus.ENQUEUED));
         persistence.updateStatus(eq(jobId1), eq(JobStatus.RUNNING));
         persistence.updateStatus(eq(jobId1), eq(JobStatus.FINISHED));
+        persistence.updateStatus(eq(jobId2), eq(JobStatus.ENQUEUED));
         persistence.updateStatus(eq(jobId2), eq(JobStatus.RUNNING));
         persistence.updateStatus(eq(jobId2), eq(JobStatus.FINISHED));
 
@@ -70,15 +75,19 @@ public class APIQueueTest extends AkkaTest {
         JobToEnqueue msg1 = new JobToEnqueue(jobId1, new URI("file:///some/path"), config, probe.ref());
         JobToEnqueue msg2 = new JobToEnqueue(jobId2, new URI("file:///some/path"), config, probe.ref());
         ref.tell(msg1);
+        assertEquals(jobId1, probe.expectMessageClass(JobEnqueued.class).jobId);
         ref.tell(msg2);
+        assertEquals(jobId2, probe.expectMessageClass(JobEnqueued.class).jobId);
 
-        assertEquals(jobId1, probe.expectMessageClass(JobFinished.class).id);
+        assertEquals(jobId1, probe.expectMessageClass(JobFinished.class).jobId);
         // verify mock
+        verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.ENQUEUED));
         verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.RUNNING));
         verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.FINISHED));
 
-        assertEquals(jobId2, probe.expectMessageClass(JobFinished.class).id);
+        assertEquals(jobId2, probe.expectMessageClass(JobFinished.class).jobId);
         // verify mock
+        verify(persistence, times(1)).updateStatus(eq(jobId2), eq(JobStatus.ENQUEUED));
         verify(persistence, times(1)).updateStatus(eq(jobId2), eq(JobStatus.RUNNING));
         verify(persistence, times(1)).updateStatus(eq(jobId2), eq(JobStatus.FINISHED));
 

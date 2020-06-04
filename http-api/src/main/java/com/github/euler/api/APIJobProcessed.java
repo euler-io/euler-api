@@ -6,16 +6,16 @@ import com.github.euler.core.JobProcessed;
 
 public class APIJobProcessed extends JobProcessed {
 
-    public final String id;
+    public final String jobId;
 
     public APIJobProcessed(String id, URI uri) {
         super(uri);
-        this.id = id;
+        this.jobId = id;
     }
 
     public APIJobProcessed(APIJob job) {
         super(job.uri);
-        this.id = job.id;
+        this.jobId = job.id;
     }
 
 }
