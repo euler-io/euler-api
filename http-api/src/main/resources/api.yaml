@@ -50,6 +50,15 @@ components:
         end-date:
           type: string
           format: date-time
+    JobList:
+      type: object
+      properties:
+        total:
+          type: integer
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
     JobStatistics:
       type: object
       properties:
@@ -110,15 +119,19 @@ paths:
           description: The direction of the sorting.
           schema:
             $ref: '#/components/schemas/SortDirection'
+        - name: status
+          in: query
+          required: false
+          description: The status to be used as filter.
+          schema:
+            $ref: '#/components/schemas/JobStatus'
       responses:
         '200':
           description: A JSON array of jobs.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Job'
+                $ref: '#/components/schemas/JobList'
   /job:
     put:
       summary: Create a new job.

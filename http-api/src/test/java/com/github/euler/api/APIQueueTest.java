@@ -7,10 +7,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Duration;
 import java.util.HashMap;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +69,6 @@ public class APIQueueTest extends AkkaTest {
     }
 
     @Test
-    @Ignore
     public void testEnqueueJobsAndHitMaxJobs() throws Exception {
         int maxJobs = 1;
         String jobId1 = "0";
@@ -107,32 +104,32 @@ public class APIQueueTest extends AkkaTest {
         jobDetails2.setId(jobId2);
         jobDetails2.setSeed("file:///some/path2");
         jobDetails2.setConfig(new ObjectMapper().readerFor(HashMap.class).readValue(config));
-        when(detailsPersistence.getNext()).thenReturn(null, jobDetails2, null);
+        when(detailsPersistence.getNext()).thenReturn(jobDetails2).thenReturn(null);
 
         ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(maxJobs, persistence, detailsPersistence, mapper, converter));
 
         JobToEnqueue msg1 = new JobToEnqueue(jobId1, probe.ref());
         JobToEnqueue msg2 = new JobToEnqueue(jobId2, probe.ref());
         ref.tell(msg1);
-        assertEquals(jobId1, probe.expectMessageClass(JobEnqueued.class).jobId, Duration.ofHours(1));
+        assertEquals(jobId1, probe.expectMessageClass(JobEnqueued.class).jobId);
         ref.tell(msg2);
-        assertEquals(jobId2, probe.expectMessageClass(JobEnqueued.class).jobId, Duration.ofHours(1));
+        assertEquals(jobId2, probe.expectMessageClass(JobEnqueued.class).jobId);
 
-        assertEquals(jobId1, probe.expectMessageClass(JobFinished.class).jobId, Duration.ofHours(1));
+        assertEquals(jobId1, probe.expectMessageClass(JobFinished.class).jobId);
         // verify mock
         verify(persistence).get(jobId1);
         verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.ENQUEUED));
         verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.RUNNING));
         verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.FINISHED));
 
-        assertEquals(jobId2, probe.expectMessageClass(JobFinished.class).jobId, Duration.ofHours(1));
+        assertEquals(jobId2, probe.expectMessageClass(JobFinished.class).jobId);
         // verify mock
         verify(persistence).get(jobId2);
         verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.ENQUEUED));
         verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.RUNNING));
         verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.FINISHED));
         verify(detailsPersistence).get(jobId1);
-        verify(detailsPersistence).getNext();
+        verify(detailsPersistence, times(2)).getNext();
     }
 
     @Test
@@ -283,6 +280,34 @@ public class APIQueueTest extends AkkaTest {
         assertEquals(jobId, probe.expectMessageClass(JobStatusInvalid.class).jobId);
 
         verify(persistence).get(jobId);
+    }
+
+    @Test
+    public void testStartQueue() throws Exception {
+        String jobId = "0";
+        String config = "{\"source\": \"empty\", \"tasks\": []}";
+
+        // mocking
+        JobPersistence persistence = mock(JobPersistence.class);
+        persistence.updateStatus(eq(jobId), eq(JobStatus.RUNNING));
+        persistence.updateStatus(eq(jobId), eq(JobStatus.FINISHED));
+
+        JobDetailsPersistence detailsPersistence = mock(JobDetailsPersistence.class);
+        JobDetails jobDetails = new JobDetails();
+        jobDetails.setId(jobId);
+        jobDetails.setSeed("file:///some/path");
+        jobDetails.setConfig(new ObjectMapper().readerFor(HashMap.class).readValue(config));
+        when(detailsPersistence.getNext()).thenReturn(jobDetails).thenReturn(null);
+
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(1, persistence, detailsPersistence, mapper, converter));
+        ref.tell(new StartQueue());
+
+        Thread.sleep(500);
+
+        // verify mock
+        verify(persistence).updateStatus(eq(jobId), eq(JobStatus.RUNNING));
+        verify(persistence).updateStatus(eq(jobId), eq(JobStatus.FINISHED));
+        verify(detailsPersistence, times(2)).getNext();
     }
 
 }

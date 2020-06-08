@@ -1,6 +1,7 @@
 package com.github.euler.api.persistence;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.elasticsearch.action.index.IndexRequest;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.euler.api.APIConfiguration;
 import com.github.euler.api.model.JobDetails;
+import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
 
@@ -54,14 +56,17 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
     }
 
     @Override
+    public JobDetails getNext() throws IOException {
+        SearchHit[] hits = listJobs(0, 1, SortBy.ENQUEUED_DATE, SortDirection.ASC, JobStatus.ENQUEUED).getHits().getHits();
+        return Arrays.stream(hits)
+                .map(h -> convert(h))
+                .findFirst()
+                .orElse(null);
+    }
+
     protected JobDetails convert(SearchHit h) {
         Map<String, Object> source = h.getSourceAsMap();
         return objectMapper.convertValue(source, JobDetails.class);
-    }
-
-    @Override
-    public JobDetails getNext() throws IOException {
-        return list(0, 1, SortBy.ENQUEUED_DATE, SortDirection.ASC).stream().findFirst().orElse(null);
     }
 
 }

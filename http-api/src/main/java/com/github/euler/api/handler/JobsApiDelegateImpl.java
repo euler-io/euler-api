@@ -1,14 +1,14 @@
 package com.github.euler.api.handler;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.github.euler.api.model.Job;
+import com.github.euler.api.model.JobList;
+import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
 import com.github.euler.api.persistence.JobPersistence;
@@ -25,14 +25,14 @@ public class JobsApiDelegateImpl implements JobsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<List<Job>> listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection) {
-        List<Job> list;
+    public ResponseEntity<JobList> listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus status) {
+        JobList list;
         try {
-            list = persistence.list(page, size, sortBy, sortDirection);
+            list = persistence.list(page, size, sortBy, sortDirection, status);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new ResponseEntity<List<Job>>(list, HttpStatus.OK);
+        return new ResponseEntity<JobList>(list, HttpStatus.OK);
     }
 
 }

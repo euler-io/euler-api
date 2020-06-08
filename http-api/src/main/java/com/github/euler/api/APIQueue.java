@@ -56,10 +56,18 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     @Override
     public Receive<APICommand> createReceive() {
         ReceiveBuilder<APICommand> builder = newReceiveBuilder();
+        builder.onMessage(StartQueue.class, this::onStartQueue);
         builder.onMessage(JobToCancel.class, this::onJobToCancel);
         builder.onMessage(JobToEnqueue.class, this::onJobToEnqueue);
         builder.onMessage(InternalAdaptedJobCommand.class, this::onInternalAdaptedEulerCommand);
         return builder.build();
+    }
+
+    public Behavior<APICommand> onStartQueue(StartQueue msg) throws IOException, URISyntaxException {
+        if (isSpotAvailable()) {
+            processNext();
+        }
+        return this;
     }
 
     public Behavior<APICommand> onJobToCancel(JobToCancel msg) throws IOException {
@@ -82,7 +90,6 @@ public class APIQueue extends AbstractBehavior<APICommand> {
 
     public Behavior<APICommand> onJobToEnqueue(JobToEnqueue msg) throws IOException, URISyntaxException {
         Job job = persistence.get(msg.jobId);
-        System.out.println(msg.jobId + " " + job.getId());
         JobStatus status = job.getStatus();
         if (status == JobStatus.NEW) {
             state.enqueue(msg);
@@ -110,10 +117,10 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         URI uri = new URI(jobDetails.getSeed());
         Config config = ConfigFactory.parseString(json);
         ActorRef<JobCommand> ref = spawn(jobDetails.getId(), config);
-        APIJob jobMsg = new APIJob(jobDetails.getId(), uri, responseAdaptor);
-        ref.tell(jobMsg);
         state.running();
         persistence.updateStatus(jobDetails.getId(), JobStatus.RUNNING);
+        APIJob jobMsg = new APIJob(jobDetails.getId(), uri, responseAdaptor);
+        ref.tell(jobMsg);
     }
 
     private ActorRef<JobCommand> spawn(String jobId, Config config) {
@@ -144,7 +151,6 @@ public class APIQueue extends AbstractBehavior<APICommand> {
 
     private void processNext() throws IOException, URISyntaxException {
         JobDetails next = detailsPersistence.getNext();
-        System.out.println(next);
         if (next != null) {
             process(next);
         }
