@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.euler.api.persistence.JobDetailsPersistence;
 import com.github.euler.api.persistence.JobPersistence;
 import com.github.euler.configuration.EulerConfigConverter;
 
@@ -22,12 +24,16 @@ public class AkkaConfiguration {
 
     private final APIConfiguration configuration;
     private final JobPersistence persistence;
+    private final JobDetailsPersistence detailsPersistence;
+    private final ObjectMapper mapper;
 
     @Autowired
-    public AkkaConfiguration(APIConfiguration configuration, JobPersistence persistence) {
+    public AkkaConfiguration(APIConfiguration configuration, JobPersistence persistence, JobDetailsPersistence detailsPersistence, ObjectMapper mapper) {
         super();
         this.configuration = configuration;
         this.persistence = persistence;
+        this.detailsPersistence = detailsPersistence;
+        this.mapper = mapper;
     }
 
     @PostConstruct
@@ -43,9 +49,8 @@ public class AkkaConfiguration {
     private void start() {
         String name = configuration.getConfig().getString("euler.system-name");
         int maxJobs = configuration.getConfig().getInt("euler.queue.max-concurrent-jobs");
-        int capacity = configuration.getConfig().getInt("euler.queue.capacity");
         EulerConfigConverter converter = new EulerConfigConverter();
-        system = ActorSystem.create(APIQueue.create(maxJobs, capacity, persistence, converter), name, configuration.getConfig());
+        system = ActorSystem.create(APIQueue.create(maxJobs, persistence, detailsPersistence, mapper, converter), name, configuration.getConfig());
     }
 
     @PreDestroy

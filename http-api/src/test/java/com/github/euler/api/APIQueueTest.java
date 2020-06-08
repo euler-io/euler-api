@@ -5,16 +5,21 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.net.URI;
+import java.time.Duration;
+import java.util.HashMap;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.euler.api.model.Job;
+import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.JobStatus;
+import com.github.euler.api.persistence.JobDetailsPersistence;
 import com.github.euler.api.persistence.JobPersistence;
 import com.github.euler.configuration.EulerConfigConverter;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -22,47 +27,69 @@ import akka.actor.typed.ActorRef;
 public class APIQueueTest extends AkkaTest {
 
     private EulerConfigConverter converter = new EulerConfigConverter();
+    private ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void testEnqueueJob() throws Exception {
         int maxJobs = 1;
         String jobId = "0";
-        Config config = ConfigFactory.parseString("{source: empty, tasks: []}");
+        String config = "{\"source\": \"empty\", \"tasks\": []}";
 
         TestProbe<APICommand> probe = testKit.createTestProbe();
 
         // mocking
         JobPersistence persistence = mock(JobPersistence.class);
+        Job job = new Job();
+        job.setId(jobId);
+        job.setStatus(JobStatus.NEW);
+        when(persistence.get(jobId)).thenReturn(job);
         persistence.updateStatus(eq(jobId), eq(JobStatus.ENQUEUED));
         persistence.updateStatus(eq(jobId), eq(JobStatus.RUNNING));
         persistence.updateStatus(eq(jobId), eq(JobStatus.FINISHED));
 
-        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(maxJobs, 100, persistence, converter));
+        JobDetailsPersistence detailsPersistence = mock(JobDetailsPersistence.class);
+        JobDetails jobDetails = new JobDetails();
+        jobDetails.setId(jobId);
+        jobDetails.setSeed("file:///some/path");
+        jobDetails.setConfig(new ObjectMapper().readerFor(HashMap.class).readValue(config));
+        when(detailsPersistence.get(jobId)).thenReturn(jobDetails);
 
-        JobToEnqueue msg = new JobToEnqueue(jobId, new URI("file:///some/path"), config, probe.ref());
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(maxJobs, persistence, detailsPersistence, mapper, converter));
+
+        JobToEnqueue msg = new JobToEnqueue(jobId, probe.ref());
         ref.tell(msg);
 
         probe.expectMessageClass(JobEnqueued.class);
         probe.expectMessageClass(JobFinished.class);
 
         // verify mock
+        verify(persistence).get(jobId);
         verify(persistence).updateStatus(eq(jobId), eq(JobStatus.ENQUEUED));
         verify(persistence).updateStatus(eq(jobId), eq(JobStatus.RUNNING));
         verify(persistence).updateStatus(eq(jobId), eq(JobStatus.FINISHED));
+        verify(detailsPersistence).get(jobId);
     }
 
     @Test
+    @Ignore
     public void testEnqueueJobsAndHitMaxJobs() throws Exception {
         int maxJobs = 1;
         String jobId1 = "0";
         String jobId2 = "1";
-
-        Config config = ConfigFactory.parseString("{source: empty, tasks: []}");
+        String config = "{\"source\": \"empty\", \"tasks\": []}";
 
         TestProbe<APICommand> probe = testKit.createTestProbe();
 
         // mocking
         JobPersistence persistence = mock(JobPersistence.class);
+        Job job1 = new Job();
+        job1.setId(jobId1);
+        job1.setStatus(JobStatus.NEW);
+        when(persistence.get(jobId1)).thenReturn(job1);
+        Job job2 = new Job();
+        job2.setId(jobId2);
+        job2.setStatus(JobStatus.NEW);
+        when(persistence.get(jobId2)).thenReturn(job2);
         persistence.updateStatus(eq(jobId1), eq(JobStatus.ENQUEUED));
         persistence.updateStatus(eq(jobId1), eq(JobStatus.RUNNING));
         persistence.updateStatus(eq(jobId1), eq(JobStatus.FINISHED));
@@ -70,27 +97,192 @@ public class APIQueueTest extends AkkaTest {
         persistence.updateStatus(eq(jobId2), eq(JobStatus.RUNNING));
         persistence.updateStatus(eq(jobId2), eq(JobStatus.FINISHED));
 
-        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(maxJobs, 100, persistence, converter));
+        JobDetailsPersistence detailsPersistence = mock(JobDetailsPersistence.class);
+        JobDetails jobDetails1 = new JobDetails();
+        jobDetails1.setId(jobId1);
+        jobDetails1.setSeed("file:///some/path1");
+        jobDetails1.setConfig(new ObjectMapper().readerFor(HashMap.class).readValue(config));
+        when(detailsPersistence.get(jobId1)).thenReturn(jobDetails1);
+        JobDetails jobDetails2 = new JobDetails();
+        jobDetails2.setId(jobId2);
+        jobDetails2.setSeed("file:///some/path2");
+        jobDetails2.setConfig(new ObjectMapper().readerFor(HashMap.class).readValue(config));
+        when(detailsPersistence.getNext()).thenReturn(null, jobDetails2, null);
 
-        JobToEnqueue msg1 = new JobToEnqueue(jobId1, new URI("file:///some/path"), config, probe.ref());
-        JobToEnqueue msg2 = new JobToEnqueue(jobId2, new URI("file:///some/path"), config, probe.ref());
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(maxJobs, persistence, detailsPersistence, mapper, converter));
+
+        JobToEnqueue msg1 = new JobToEnqueue(jobId1, probe.ref());
+        JobToEnqueue msg2 = new JobToEnqueue(jobId2, probe.ref());
         ref.tell(msg1);
-        assertEquals(jobId1, probe.expectMessageClass(JobEnqueued.class).jobId);
+        assertEquals(jobId1, probe.expectMessageClass(JobEnqueued.class).jobId, Duration.ofHours(1));
         ref.tell(msg2);
-        assertEquals(jobId2, probe.expectMessageClass(JobEnqueued.class).jobId);
+        assertEquals(jobId2, probe.expectMessageClass(JobEnqueued.class).jobId, Duration.ofHours(1));
 
-        assertEquals(jobId1, probe.expectMessageClass(JobFinished.class).jobId);
+        assertEquals(jobId1, probe.expectMessageClass(JobFinished.class).jobId, Duration.ofHours(1));
         // verify mock
+        verify(persistence).get(jobId1);
         verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.ENQUEUED));
         verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.RUNNING));
         verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.FINISHED));
 
-        assertEquals(jobId2, probe.expectMessageClass(JobFinished.class).jobId);
+        assertEquals(jobId2, probe.expectMessageClass(JobFinished.class).jobId, Duration.ofHours(1));
         // verify mock
-        verify(persistence, times(1)).updateStatus(eq(jobId2), eq(JobStatus.ENQUEUED));
-        verify(persistence, times(1)).updateStatus(eq(jobId2), eq(JobStatus.RUNNING));
-        verify(persistence, times(1)).updateStatus(eq(jobId2), eq(JobStatus.FINISHED));
+        verify(persistence).get(jobId2);
+        verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.ENQUEUED));
+        verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.RUNNING));
+        verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.FINISHED));
+        verify(detailsPersistence).get(jobId1);
+        verify(detailsPersistence).getNext();
+    }
 
+    @Test
+    public void testEnqueueNotNewJob() throws Exception {
+        int maxJobs = 1;
+        String jobId = "0";
+
+        TestProbe<APICommand> probe = testKit.createTestProbe();
+
+        // mocking
+        JobPersistence persistence = mock(JobPersistence.class);
+        Job job = new Job();
+        job.setId(jobId);
+        job.setStatus(JobStatus.RUNNING);
+        when(persistence.get(jobId)).thenReturn(job);
+
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(maxJobs, persistence, mock(JobDetailsPersistence.class), mapper, converter));
+
+        JobToEnqueue msg = new JobToEnqueue(jobId, probe.ref());
+        ref.tell(msg);
+        assertEquals(jobId, probe.expectMessageClass(JobStatusInvalid.class).jobId);
+
+        // verify mock
+        verify(persistence).get(jobId);
+    }
+
+    @Test
+    public void testCancelNewJob() throws Exception {
+        String jobId = "0";
+
+        TestProbe<APICommand> probe = testKit.createTestProbe();
+
+        // mocking
+        JobPersistence persistence = mock(JobPersistence.class);
+        Job job = new Job();
+        job.setId(jobId);
+        job.setStatus(JobStatus.NEW);
+        when(persistence.get(jobId)).thenReturn(job);
+        persistence.updateStatus(eq(jobId), eq(JobStatus.CANCELLED));
+
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(1, persistence, mock(JobDetailsPersistence.class), mapper, converter));
+        ref.tell(new JobToCancel(jobId, probe.ref()));
+        assertEquals(jobId, probe.expectMessageClass(JobCancelled.class).jobId);
+
+        verify(persistence).get(jobId);
+        verify(persistence, times(1)).updateStatus(eq(jobId), eq(JobStatus.CANCELLED));
+    }
+
+    @Test
+    public void testCancelEnqueuedJob() throws Exception {
+        String jobId = "0";
+
+        TestProbe<APICommand> probe = testKit.createTestProbe();
+
+        // mocking
+        JobPersistence persistence = mock(JobPersistence.class);
+        Job job = new Job();
+        job.setId(jobId);
+        job.setStatus(JobStatus.ENQUEUED);
+        when(persistence.get(jobId)).thenReturn(job);
+        persistence.updateStatus(eq(jobId), eq(JobStatus.CANCELLED));
+
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(1, persistence, mock(JobDetailsPersistence.class), mapper, converter));
+        ref.tell(new JobToCancel(jobId, probe.ref()));
+        assertEquals(jobId, probe.expectMessageClass(JobCancelled.class).jobId);
+
+        verify(persistence).get(jobId);
+        verify(persistence, times(1)).updateStatus(eq(jobId), eq(JobStatus.CANCELLED));
+    }
+
+    @Test
+    public void testCancelRunningJob() throws Exception {
+        String jobId = "0";
+
+        TestProbe<APICommand> probe = testKit.createTestProbe();
+
+        // mocking
+        JobPersistence persistence = mock(JobPersistence.class);
+        Job job = new Job();
+        job.setId(jobId);
+        job.setStatus(JobStatus.RUNNING);
+        when(persistence.get(jobId)).thenReturn(job);
+        persistence.updateStatus(eq(jobId), eq(JobStatus.CANCELLED));
+
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(1, persistence, mock(JobDetailsPersistence.class), mapper, converter));
+        ref.tell(new JobToCancel(jobId, probe.ref()));
+        assertEquals(jobId, probe.expectMessageClass(JobCancelled.class).jobId);
+
+        verify(persistence).get(jobId);
+        verify(persistence, times(1)).updateStatus(eq(jobId), eq(JobStatus.CANCELLED));
+    }
+
+    @Test
+    public void testCancelCancelledJob() throws Exception {
+        String jobId = "0";
+
+        TestProbe<APICommand> probe = testKit.createTestProbe();
+
+        // mocking
+        JobPersistence persistence = mock(JobPersistence.class);
+        Job job = new Job();
+        job.setId(jobId);
+        job.setStatus(JobStatus.CANCELLED);
+        when(persistence.get(jobId)).thenReturn(job);
+
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(1, persistence, mock(JobDetailsPersistence.class), mapper, converter));
+        ref.tell(new JobToCancel(jobId, probe.ref()));
+        assertEquals(jobId, probe.expectMessageClass(JobStatusInvalid.class).jobId);
+
+        verify(persistence).get(jobId);
+    }
+
+    @Test
+    public void testCancelFinishedJob() throws Exception {
+        String jobId = "0";
+
+        TestProbe<APICommand> probe = testKit.createTestProbe();
+
+        // mocking
+        JobPersistence persistence = mock(JobPersistence.class);
+        Job job = new Job();
+        job.setId(jobId);
+        job.setStatus(JobStatus.FINISHED);
+        when(persistence.get(jobId)).thenReturn(job);
+
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(1, persistence, mock(JobDetailsPersistence.class), mapper, converter));
+        ref.tell(new JobToCancel(jobId, probe.ref()));
+        assertEquals(jobId, probe.expectMessageClass(JobStatusInvalid.class).jobId);
+
+        verify(persistence).get(jobId);
+    }
+
+    @Test
+    public void testCancelErroredJob() throws Exception {
+        String jobId = "0";
+
+        TestProbe<APICommand> probe = testKit.createTestProbe();
+
+        // mocking
+        JobPersistence persistence = mock(JobPersistence.class);
+        Job job = new Job();
+        job.setId(jobId);
+        job.setStatus(JobStatus.ERROR);
+        when(persistence.get(jobId)).thenReturn(job);
+
+        ActorRef<APICommand> ref = testKit.spawn(APIQueue.create(1, persistence, mock(JobDetailsPersistence.class), mapper, converter));
+        ref.tell(new JobToCancel(jobId, probe.ref()));
+        assertEquals(jobId, probe.expectMessageClass(JobStatusInvalid.class).jobId);
+
+        verify(persistence).get(jobId);
     }
 
 }

@@ -10,4 +10,6 @@ public interface JobDetailsPersistence {
 
     JobDetails create(JobDetails job) throws IOException;
 
+    public JobDetails getNext() throws IOException;
+
 }

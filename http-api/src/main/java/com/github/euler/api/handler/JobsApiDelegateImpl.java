@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.github.euler.api.model.Job;
+import com.github.euler.api.model.SortBy;
+import com.github.euler.api.model.SortDirection;
 import com.github.euler.api.persistence.JobPersistence;
 
 @Service
@@ -23,10 +25,10 @@ public class JobsApiDelegateImpl implements JobsApiDelegate {
     }
 
     @Override
-    public ResponseEntity<List<Job>> listJobs() {
+    public ResponseEntity<List<Job>> listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection) {
         List<Job> list;
         try {
-            list = persistence.list();
+            list = persistence.list(page, size, sortBy, sortDirection);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -1,8 +1,6 @@
 package com.github.euler.api.handler;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -11,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.api.APICommand;
 import com.github.euler.api.JobToEnqueue;
 import com.github.euler.api.model.Job;
@@ -19,9 +16,6 @@ import com.github.euler.api.model.JobConfig;
 import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.persistence.JobDetailsPersistence;
-import com.github.euler.api.persistence.JobPersistence;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 import akka.actor.typed.ActorSystem;
 
@@ -29,17 +23,13 @@ import akka.actor.typed.ActorSystem;
 public class JobApiDelegateImpl implements JobApiDelegate {
 
     private final ActorSystem<APICommand> system;
-    private final JobPersistence jobPersistence;
     private final JobDetailsPersistence jobDetailsPersistence;
-    private final ObjectMapper objectMapper;
 
     @Autowired
-    public JobApiDelegateImpl(ActorSystem<APICommand> system, JobPersistence jobPersistence, JobDetailsPersistence jobDetailsPersistence, ObjectMapper objectMapper) {
+    public JobApiDelegateImpl(ActorSystem<APICommand> system, JobDetailsPersistence jobDetailsPersistence) {
         super();
         this.system = system;
-        this.jobPersistence = jobPersistence;
         this.jobDetailsPersistence = jobDetailsPersistence;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -67,18 +57,9 @@ public class JobApiDelegateImpl implements JobApiDelegate {
 
     @Override
     public ResponseEntity<Void> enqueueJob(String jobId) {
-        try {
-            JobDetails jobDetails = jobDetailsPersistence.get(jobId);
-            Object rawConfig = jobDetails.getConfig();
-            String json = objectMapper.writer().writeValueAsString(rawConfig);
-            URI uri = new URI(jobDetails.getSeed());
-            Config config = ConfigFactory.parseString(json);
-            JobToEnqueue msg = new JobToEnqueue(jobId, uri, config);
-            system.tell(msg);
-            return new ResponseEntity<Void>(HttpStatus.OK);
-        } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        JobToEnqueue msg = new JobToEnqueue(jobId);
+        system.tell(msg);
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
     @Override
