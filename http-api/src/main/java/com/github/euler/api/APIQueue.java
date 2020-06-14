@@ -82,10 +82,10 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     }
 
     private void cancelJob(JobToCancel msg) throws IOException {
-        persistence.updateStatus(msg.jobId, JobStatus.CANCELLED);
-        if (msg.replyTo != null) {
-            msg.replyTo.tell(new JobCancelled(msg));
-        }
+//        persistence.updateStatus(msg.jobId, JobStatus.CANCELLED);
+//        if (msg.replyTo != null) {
+//            msg.replyTo.tell(new JobCancelled(msg));
+//        }
     }
 
     public Behavior<APICommand> onJobToEnqueue(JobToEnqueue msg) throws IOException, URISyntaxException {
@@ -98,17 +98,12 @@ public class APIQueue extends AbstractBehavior<APICommand> {
                 msg.replyTo.tell(new JobEnqueued(msg));
             }
             if (isSpotAvailable()) {
-                process(msg.jobId);
+                processNext();
             }
         } else if (msg.replyTo != null) {
             msg.replyTo.tell(new JobStatusInvalid(msg.jobId, "Impossible to enqueue job with status " + status));
         }
         return this;
-    }
-
-    private void process(String jobId) throws IOException, URISyntaxException {
-        JobDetails jobDetails = detailsPersistence.get(jobId);
-        process(jobDetails);
     }
 
     private void process(JobDetails jobDetails) throws IOException, URISyntaxException {
