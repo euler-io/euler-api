@@ -1,6 +1,5 @@
 package com.github.euler.api;
 
-import com.github.euler.core.CancelJob;
 import com.github.euler.core.EulerCommand;
 import com.github.euler.core.EulerJobProcessor;
 import com.github.euler.core.JobCommand;
@@ -40,8 +39,6 @@ public class APIJobExecution extends AbstractBehavior<JobCommand> {
         ReceiveBuilder<JobCommand> builder = newReceiveBuilder();
         builder.onMessage(APIJob.class, this::onJob);
         builder.onMessage(JobProcessed.class, this::onJobProcessed);
-        builder.onMessage(CancelJob.class, this::onCancelJob);
-        builder.onMessage(InternalJobCancelled.class, this::onInternalJobCancelled);
         return builder.build();
     }
 
@@ -55,20 +52,6 @@ public class APIJobExecution extends AbstractBehavior<JobCommand> {
     private Behavior<JobCommand> onJobProcessed(JobProcessed msg) {
         job.replyTo.tell(new APIJobProcessed(job));
         return Behaviors.stopped();
-    }
-
-    private Behavior<JobCommand> onCancelJob(CancelJob msg) {
-        getContext().watchWith(this.eulerRef, new InternalJobCancelled());
-        return Behaviors.stopped();
-    }
-
-    private Behavior<JobCommand> onInternalJobCancelled(InternalJobCancelled msg) {
-        job.replyTo.tell(new APIJobCancelled(job));
-        return Behaviors.same();
-    }
-
-    private static class InternalJobCancelled implements JobCommand {
-
     }
 
 }

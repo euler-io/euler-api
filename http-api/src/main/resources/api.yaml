@@ -29,6 +29,7 @@ components:
         - ENQUEUED
         - RUNNING
         - ERROR
+        - CANCELLING
         - CANCELLED
         - FINISHED
     Job:

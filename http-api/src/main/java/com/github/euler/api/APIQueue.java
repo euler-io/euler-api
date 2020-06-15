@@ -3,6 +3,7 @@ package com.github.euler.api;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.api.model.Job;
@@ -60,6 +61,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         builder.onMessage(JobToCancel.class, this::onJobToCancel);
         builder.onMessage(JobToEnqueue.class, this::onJobToEnqueue);
         builder.onMessage(InternalAdaptedJobCommand.class, this::onInternalAdaptedEulerCommand);
+        builder.onMessage(InternalJobCancelled.class, this::onInternalJobCancelled);
         return builder.build();
     }
 
@@ -73,19 +75,39 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     public Behavior<APICommand> onJobToCancel(JobToCancel msg) throws IOException {
         Job job = persistence.get(msg.jobId);
         JobStatus status = job.getStatus();
-        if (status != JobStatus.CANCELLED && status != JobStatus.FINISHED && status != JobStatus.ERROR) {
-            cancelJob(msg);
+        if (status != JobStatus.CANCELLED && status != JobStatus.CANCELLING && status != JobStatus.FINISHED && status != JobStatus.ERROR) {
+            startCancel(msg);
         } else if (msg.replyTo != null) {
             msg.replyTo.tell(new JobStatusInvalid(msg.jobId, "Impossible to cancel job with status " + status));
         }
         return this;
     }
 
-    private void cancelJob(JobToCancel msg) throws IOException {
-//        persistence.updateStatus(msg.jobId, JobStatus.CANCELLED);
-//        if (msg.replyTo != null) {
-//            msg.replyTo.tell(new JobCancelled(msg));
-//        }
+    private void startCancel(JobToCancel msg) throws IOException {
+        persistence.updateStatus(msg.jobId, JobStatus.CANCELLING);
+        if (msg.replyTo != null) {
+            msg.replyTo.tell(new JobCancelling(msg));
+        }
+        Optional<ActorRef<Void>> child = getContext().getChild(getChildName(msg.jobId));
+        if (child.isPresent()) {
+            ActorRef<Void> other = child.get();
+            getContext().watchWith(other, new InternalJobCancelled(msg));
+            getContext().stop(other);
+        } else {
+            jobCancelled(msg);
+        }
+    }
+
+    public Behavior<APICommand> onInternalJobCancelled(InternalJobCancelled imsg) throws IOException {
+        jobCancelled(imsg.msg);
+        return this;
+    }
+
+    protected void jobCancelled(JobToCancel msg) throws IOException {
+        persistence.updateStatus(msg.jobId, JobStatus.CANCELLED);
+        if (msg.replyTo != null) {
+            msg.replyTo.tell(new JobCancelled(msg));
+        }
     }
 
     public Behavior<APICommand> onJobToEnqueue(JobToEnqueue msg) throws IOException, URISyntaxException {
@@ -120,8 +142,12 @@ public class APIQueue extends AbstractBehavior<APICommand> {
 
     private ActorRef<JobCommand> spawn(String jobId, Config config) {
         Behavior<JobCommand> behavior = converter.create(config, (s, p) -> APIJobExecution.create(s, p));
-        String name = EULER + jobId;
+        String name = getChildName(jobId);
         return getContext().spawn(behavior, name);
+    }
+
+    protected String getChildName(String jobId) {
+        return EULER + jobId;
     }
 
     private Behavior<APICommand> onInternalAdaptedEulerCommand(InternalAdaptedJobCommand msg) throws IOException, URISyntaxException {
@@ -161,6 +187,16 @@ public class APIQueue extends AbstractBehavior<APICommand> {
 
         public InternalAdaptedJobCommand(JobCommand msg) {
             this.response = msg;
+        }
+
+    }
+
+    private static class InternalJobCancelled implements APICommand {
+
+        public final JobToCancel msg;
+
+        public InternalJobCancelled(JobToCancel msg) {
+            this.msg = msg;
         }
 
     }
