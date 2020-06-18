@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.github.euler.api.APICommand;
+import com.github.euler.api.JobToCancel;
 import com.github.euler.api.JobToEnqueue;
 import com.github.euler.api.model.Job;
 import com.github.euler.api.model.JobConfig;
@@ -33,7 +34,7 @@ public class JobApiDelegateImpl implements JobApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Job> createNewJob(JobConfig body) {
+    public ResponseEntity<Job> createNewJob(JobConfig body, Boolean enqueue) {
         String id = UUID.randomUUID().toString();
         try {
             JobDetails jobDetails = new JobDetails();
@@ -43,6 +44,9 @@ public class JobApiDelegateImpl implements JobApiDelegate {
             jobDetails.setConfig(body.getConfig());
             jobDetails.setSeed(body.getSeed());
             Job job = JobUtils.fromDetails(jobDetailsPersistence.create(jobDetails));
+            if (enqueue) {
+                enqueueJob(job.getId());
+            }
             return new ResponseEntity<Job>(job, HttpStatus.OK);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -51,8 +55,8 @@ public class JobApiDelegateImpl implements JobApiDelegate {
 
     @Override
     public ResponseEntity<Void> cancelJob(String jobId) {
-        // TODO Auto-generated method stub
-        return JobApiDelegate.super.cancelJob(jobId);
+        system.tell(new JobToCancel(jobId));
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
     @Override

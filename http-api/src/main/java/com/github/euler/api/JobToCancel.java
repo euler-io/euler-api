@@ -13,4 +13,8 @@ public class JobToCancel implements APICommand {
         this.replyTo = replyTo;
     }
 
+    public JobToCancel(String jobId) {
+        this(jobId, null);
+    }
+
 }

@@ -144,6 +144,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/JobConfig'
+      parameters:
+        - name: enqueue
+          in: query
+          required: false
+          description: If the job must be automatically enqueued.
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: A JSON of the new job.
