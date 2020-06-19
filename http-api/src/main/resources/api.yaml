@@ -10,12 +10,12 @@ components:
   schemas:
     SortBy:
       type: string
-      default: CREATION-DATE
+      default: CREATION_DATE
       enum:
-        - CREATION-DATE
-        - ENQUEUED-DATE
-        - START-DATE
-        - END-DATE
+        - CREATION_DATE
+        - ENQUEUED_DATE
+        - START_DATE
+        - END_DATE
     SortDirection:
       type: string
       default: ASC
