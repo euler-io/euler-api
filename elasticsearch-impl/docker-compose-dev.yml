@@ -15,19 +15,18 @@ services:
   ports:
    - 8080:8080
    - 8000:8000
-#  depends_on:
-#   - elastic-dev
-#  command: mvn -o spring-boot:run -Dmaven.repo.local=/mvn/.m2/repository -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:8000"
-  command: mvn help:effective-settings
-# elastic-dev:
-#  image: amazon/opendistro-for-elasticsearch:1.3.0
-#  environment:
-#   discovery.type: single-node
-#  ports:
-#   - 9200:9200
-#   - 9600:9600
-#  volumes:
-#	   - es-data:/usr/share/elasticsearch/data
+  depends_on:
+   - elastic-dev
+  command: mvn -o spring-boot:run -Dmaven.repo.local=/mvn/.m2/repository -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:8000"
+ elastic-dev:
+  image: amazon/opendistro-for-elasticsearch:1.3.0
+  environment:
+   discovery.type: single-node
+  ports:
+   - 9200:9200
+   - 9600:9600
+  volumes:
+   - es-data:/usr/share/elasticsearch/data
 
 volumes:
  es-data:
