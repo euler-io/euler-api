@@ -3,13 +3,23 @@ package com.github.euler.api;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -39,10 +49,49 @@ public class ElasticSearchConfiguration {
         HttpHost[] hosts = getElasticsearchHosts();
         RestClientBuilder builder = RestClient.builder(hosts);
         String ca = getCertificateAuthorities();
-        if (ca != null) {
-            builder.setHttpClientConfigCallback(new SSLConfigCallback(ca));
-        }
+        String username = getUsername();
+        String password = getPassword();
+        builder.setHttpClientConfigCallback(new HttpClientConfigCallback() {
+
+            @Override
+            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                if (ca != null) {
+                    try {
+                        SSLContextBuilder custom = SSLContexts.custom();
+                        custom.loadTrustMaterial(TrustStoreLoader.loadTrustStore(ca), new TrustSelfSignedStrategy());
+                        httpClientBuilder = httpClientBuilder.setSSLContext(custom.build());
+                    } catch (GeneralSecurityException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                if (username != null && !username.isEmpty() && password != null) {
+                    final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+                    httpClientBuilder = httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                }
+                return httpClientBuilder;
+            }
+
+        });
         client = new RestHighLevelClient(builder);
+    }
+
+    private String getUsername() {
+        Config config = configuration.getConfig();
+        try {
+            return config.getString("euler.http-api.elasticsearch.username");
+        } catch (ConfigException.WrongType e) {
+            return null;
+        }
+    }
+
+    private String getPassword() {
+        Config config = configuration.getConfig();
+        try {
+            return config.getString("euler.http-api.elasticsearch.password");
+        } catch (ConfigException.WrongType e) {
+            return null;
+        }
     }
 
     @Bean
@@ -84,7 +133,7 @@ public class ElasticSearchConfiguration {
     String getCertificateAuthorities() {
         try {
             Config config = configuration.getConfig();
-            return config.getString("euler.http-api.elasticsearch.ssl.certificateAuthorities");
+            return config.getString("euler.http-api.elasticsearch.ssl.certificate-authorities");
         } catch (ConfigException.Missing e) {
             return null;
         }
