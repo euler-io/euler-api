@@ -27,16 +27,16 @@ services:
    - 9600:9600
   volumes:
    - es-data:/usr/share/elasticsearch/data
-   - /src/docker/opendistro-config.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/config.yml:ro
-   - /src/docker/opendistro-internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml:ro
-   - /src/docker/opendistro-roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml:ro
-   - /src/docker/opendistro-roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml:ro
-   - /src/docker/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-   - /src/docker/dev-certificates/euler.pem:/usr/share/elasticsearch/config/euler.pem:ro
-   - /src/docker/dev-certificates/euler-key.pem:/usr/share/elasticsearch/config/euler-key.pem:ro
-   - /src/docker/dev-certificates/node.pem:/usr/share/elasticsearch/config/node.pem:ro
-   - /src/docker/dev-certificates/node-key.pem:/usr/share/elasticsearch/config//node-key.pem:ro
-   - /src/docker/dev-certificates/root-ca.pem:/usr/share/elasticsearch/config/root-ca.pem:ro
+   - ./docker/opendistro-config.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/config.yml:ro
+   - ./docker/opendistro-internal_users.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml:ro
+   - ./docker/opendistro-roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml:ro
+   - ./docker/opendistro-roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml:ro
+   - ./docker/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+   - ./docker/dev-certificates/euler.pem:/usr/share/elasticsearch/config/euler.pem:ro
+   - ./docker/dev-certificates/euler-key.pem:/usr/share/elasticsearch/config/euler-key.pem:ro
+   - ./docker/dev-certificates/node.pem:/usr/share/elasticsearch/config/node.pem:ro
+   - ./docker/dev-certificates/node-key.pem:/usr/share/elasticsearch/config//node-key.pem:ro
+   - ./docker/dev-certificates/root-ca.pem:/usr/share/elasticsearch/config/root-ca.pem:ro
 
 volumes:
  es-data:
