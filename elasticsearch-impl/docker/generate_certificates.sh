@@ -27,13 +27,10 @@ echo "#                     Generate Admin cert                    #"
 echo "##############################################################"
 generate_certificate admin admin
 
-for (( i=1; i<=$NODES; i++ ))
-do
-	echo "##############################################################"
-	echo "#           Generate Elasticsearch Node ${i} cert               #"
-	echo "##############################################################"
-	generate_certificate node${i} ${NODE_NAME_PREDICATE}${i}
-done
+echo "##############################################################"
+echo "#           Generate Elasticsearch Elasticsearch dev cert    #"
+echo "##############################################################"
+generate_certificate elastic-dev elastic-dev
 
 echo "##############################################################"
 echo "#                     Generate Kibana cert                   #"
