@@ -32,11 +32,11 @@ services:
    - /src/docker/opendistro-roles.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml:ro
    - /src/docker/opendistro-roles_mapping.yml:/usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml:ro
    - /src/docker/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-   - /src/docker/euler.pem:/usr/share/elasticsearch/config/euler.pem:ro
-   - /src/docker/euler-key.pem:/usr/share/elasticsearch/config/euler-key.pem:ro
-   - /src/docker/node.pem:/usr/share/elasticsearch/config/node.pem:ro
-   - /src/docker/node-key.pem:/usr/share/elasticsearch/config//node-key.pem:ro
-   - /src/docker/root-ca.pem:/usr/share/elasticsearch/config/root-ca.pem:ro
+   - /src/docker/dev-certificates/euler.pem:/usr/share/elasticsearch/config/euler.pem:ro
+   - /src/docker/dev-certificates/euler-key.pem:/usr/share/elasticsearch/config/euler-key.pem:ro
+   - /src/docker/dev-certificates/node.pem:/usr/share/elasticsearch/config/node.pem:ro
+   - /src/docker/dev-certificates/node-key.pem:/usr/share/elasticsearch/config//node-key.pem:ro
+   - /src/docker/dev-certificates/root-ca.pem:/usr/share/elasticsearch/config/root-ca.pem:ro
 
 volumes:
  es-data:
