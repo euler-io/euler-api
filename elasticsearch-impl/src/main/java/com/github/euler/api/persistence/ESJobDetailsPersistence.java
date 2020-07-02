@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,8 +23,10 @@ import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
+import com.typesafe.config.ConfigRenderOptions;
 
 @Service
+@DependsOn("com.github.euler.api.WaitElasticsearchBean")
 public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> implements JobDetailsPersistence {
 
     private final ObjectWriter writer;
@@ -31,6 +36,16 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
         super(client, configuration, objectMapper);
         writer = objectMapper.writerFor(JobDetails.class);
         reader = objectMapper.readerFor(JobDetails.class);
+    }
+
+    @PostConstruct
+    protected void initializeJobIndex() throws IOException {
+        boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
+        if (autoInitialize) {
+            boolean forceCreation = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.force-indices-creation");
+            String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.job-index.mappings").root().render(ConfigRenderOptions.concise());
+            initializeIndex(getJobIndex(), jsonMapping, forceCreation, RequestOptions.DEFAULT);
+        }
     }
 
     @Override

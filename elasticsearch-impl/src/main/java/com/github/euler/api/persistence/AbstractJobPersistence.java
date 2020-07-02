@@ -26,6 +26,10 @@ public abstract class AbstractJobPersistence<J extends Job> extends ESPersistenc
         super(client, configuration, objectMapper);
     }
 
+    protected String getJobIndex() {
+        return configuration.getConfig().getString("euler.http-api.elasticsearch.job-index.name");
+    }
+
     protected SearchResponse listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus status) throws IOException {
         SearchRequest req = new SearchRequest(getJobIndex());
         QueryBuilder query;

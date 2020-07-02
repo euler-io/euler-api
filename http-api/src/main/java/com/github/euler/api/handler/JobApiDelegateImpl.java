@@ -2,7 +2,6 @@ package com.github.euler.api.handler;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,10 +34,8 @@ public class JobApiDelegateImpl implements JobApiDelegate {
 
     @Override
     public ResponseEntity<Job> createNewJob(JobConfig body, Boolean enqueue) {
-        String id = UUID.randomUUID().toString();
         try {
             JobDetails jobDetails = new JobDetails();
-            jobDetails.setId(id);
             jobDetails.setStartDate(OffsetDateTime.now());
             jobDetails.setStatus(JobStatus.NEW);
             jobDetails.setConfig(body.getConfig());
