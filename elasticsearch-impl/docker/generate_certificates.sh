@@ -15,6 +15,8 @@ generate_certificate() {
 	rm ${OUTPUT}/${predicate}.csr
 }
 
+mkdir -p ${OUTPUT}
+
 echo "##############################################################"
 echo "#                       Generate Root CA                     #"
 echo "##############################################################"

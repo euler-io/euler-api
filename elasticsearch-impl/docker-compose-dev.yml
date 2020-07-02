@@ -34,8 +34,8 @@ services:
    - ./docker/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
    - ./docker/dev-certificates/euler.pem:/usr/share/elasticsearch/config/euler.pem:ro
    - ./docker/dev-certificates/euler-key.pem:/usr/share/elasticsearch/config/euler-key.pem:ro
-   - ./docker/dev-certificates/node.pem:/usr/share/elasticsearch/config/node.pem:ro
-   - ./docker/dev-certificates/node-key.pem:/usr/share/elasticsearch/config//node-key.pem:ro
+   - ./docker/dev-certificates/elastic-dev.pem:/usr/share/elasticsearch/config/node.pem:ro
+   - ./docker/dev-certificates/elastic-dev-key.pem:/usr/share/elasticsearch/config//node-key.pem:ro
    - ./docker/dev-certificates/root-ca.pem:/usr/share/elasticsearch/config/root-ca.pem:ro
 
 volumes:
