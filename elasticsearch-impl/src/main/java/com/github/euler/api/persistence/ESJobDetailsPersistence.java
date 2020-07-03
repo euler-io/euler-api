@@ -42,9 +42,8 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
     protected void initializeJobIndex() throws IOException {
         boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
         if (autoInitialize) {
-            boolean forceCreation = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.force-indices-creation");
             String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.job-index.mappings").root().render(ConfigRenderOptions.concise());
-            initializeIndex(getJobIndex(), jsonMapping, forceCreation, RequestOptions.DEFAULT);
+            initializeIndex(getJobIndex(), jsonMapping, RequestOptions.DEFAULT);
         }
     }
 

@@ -28,8 +28,8 @@ public abstract class ESPersistence {
         this.objectMapper = objectMapper;
     }
 
-    protected void initializeIndex(String index, String jsonMapping, boolean forceCreation, RequestOptions opts) throws IOException {
-        if (forceCreation || !isIndexCreated(index, opts)) {
+    protected void initializeIndex(String index, String jsonMapping, RequestOptions opts) throws IOException {
+        if (!isIndexCreated(index, opts)) {
             LOGGER.info("Initiliazing index {}.", index);
             createIndex(index, jsonMapping, opts);
         }

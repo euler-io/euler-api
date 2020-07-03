@@ -7,6 +7,14 @@ info:
     name: GNU Lesser General Public License v3.0
     url: https://www.gnu.org/licenses/lgpl-3.0.en.html
 components:
+  securitySchemes:
+    euler-auth:
+      type: http
+      scheme: basic
+      #bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
   schemas:
     SortBy:
       type: string
@@ -133,6 +141,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JobList'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
   /job:
     put:
       summary: Create a new job.
@@ -161,6 +171,8 @@ paths:
                   $ref: '#/components/schemas/Job'
         '400':
           description: Error creating the job.
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
   '/job/{job-id}':
     get:
       summary: Get the details of the job.
@@ -181,6 +193,8 @@ paths:
                 $ref: '#/components/schemas/JobDetails'
         '404':
           description: Job not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     post:
       summary: Enqueue a new job for execution
       operationId: enqueue-job
@@ -198,6 +212,8 @@ paths:
           description: When the job can't be enqueued for execution.
         '404':
           description: Job not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     delete:
       summary: Cancel the job execution.
       operationId: cancel-job
@@ -215,6 +231,8 @@ paths:
           description: When the job can't be cancelled.
         '404':
           description: Job not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
   '/statistics/{job-id}':
     get:
@@ -238,3 +256,7 @@ paths:
                   $ref: '#/components/schemas/JobStatistics'
         '404':
           description: Job not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+security:
+  - euler-auth: []
