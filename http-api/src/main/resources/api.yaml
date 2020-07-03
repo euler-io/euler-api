@@ -10,8 +10,8 @@ components:
   securitySchemes:
     euler-auth:
       type: http
-      scheme: basic
-      #bearerFormat: JWT
+      scheme: bearer
+      bearerFormat: JWT
   responses:
     UnauthorizedError:
       description: Access token is missing or invalid
@@ -96,6 +96,35 @@ components:
         - $ref: '#/components/schemas/JobConfig'
       
 paths:
+  /auth:
+    post:
+      summary: Generate a JWT Token.
+      operationId: authenticate
+      parameters:
+        - name: username
+          in: query
+          required: true
+          description: The username.
+          schema:
+            default: 0
+            type: string
+        - name: password
+          in: query
+          required: true
+          description: The password.
+          schema:
+            default: 0
+            type: string
+      responses:
+        '200':
+          description: The JWT token.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        '401':
+          description: Username or password incorrect.
   /jobs:
     get:
       summary: Get a list of jobs.
