@@ -8,7 +8,6 @@ import javax.annotation.PostConstruct;
 
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.context.annotation.DependsOn;
@@ -23,6 +22,7 @@ import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
+import com.github.euler.opendistro.OpenDistroClient;
 import com.typesafe.config.ConfigRenderOptions;
 
 @Service
@@ -32,7 +32,7 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
     private final ObjectWriter writer;
     private final ObjectReader reader;
 
-    public ESJobDetailsPersistence(RestHighLevelClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
+    public ESJobDetailsPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
         super(client, configuration, objectMapper);
         writer = objectMapper.writerFor(JobDetails.class);
         reader = objectMapper.readerFor(JobDetails.class);

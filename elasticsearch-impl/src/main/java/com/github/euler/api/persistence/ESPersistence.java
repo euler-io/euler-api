@@ -3,7 +3,6 @@ package com.github.euler.api.persistence;
 import java.io.IOException;
 
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -12,16 +11,17 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.api.APIConfiguration;
+import com.github.euler.opendistro.OpenDistroClient;
 
 public abstract class ESPersistence {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ESPersistence.class);
 
-    protected final RestHighLevelClient client;
+    protected final OpenDistroClient client;
     protected final APIConfiguration configuration;
     protected final ObjectMapper objectMapper;
 
-    public ESPersistence(RestHighLevelClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
+    public ESPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
         super();
         this.client = client;
         this.configuration = configuration;

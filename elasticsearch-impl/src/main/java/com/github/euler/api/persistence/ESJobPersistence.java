@@ -11,7 +11,6 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +22,14 @@ import com.github.euler.api.model.JobList;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
+import com.github.euler.opendistro.OpenDistroClient;
 
 @Service
 public class ESJobPersistence extends AbstractJobPersistence<Job> implements JobPersistence {
 
     private ObjectReader reader;
 
-    public ESJobPersistence(RestHighLevelClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
+    public ESJobPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
         super(client, configuration, objectMapper);
         reader = objectMapper.readerFor(Job.class);
     }

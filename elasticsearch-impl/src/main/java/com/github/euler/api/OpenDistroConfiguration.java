@@ -25,17 +25,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.github.euler.opendistro.OpenDistroClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 
 @Configuration
-public class ElasticSearchConfiguration {
+public class OpenDistroConfiguration {
 
     private final APIConfiguration configuration;
-    private RestHighLevelClient client;
+    private OpenDistroClient client;
 
     @Autowired
-    public ElasticSearchConfiguration(APIConfiguration configuraiton) {
+    public OpenDistroConfiguration(APIConfiguration configuraiton) {
         super();
         this.configuration = configuraiton;
     }
@@ -46,11 +47,15 @@ public class ElasticSearchConfiguration {
     }
 
     private void start() {
+        String username = getUsername();
+        String password = getPassword();
+        client = startClient(username, password);
+    }
+
+    public OpenDistroClient startClient(String username, String password) {
         HttpHost[] hosts = getElasticsearchHosts();
         RestClientBuilder builder = RestClient.builder(hosts);
         String ca = getCertificateAuthorities();
-        String username = getUsername();
-        String password = getPassword();
         builder.setHttpClientConfigCallback(new HttpClientConfigCallback() {
 
             @Override
@@ -73,7 +78,7 @@ public class ElasticSearchConfiguration {
             }
 
         });
-        client = new RestHighLevelClient(builder);
+        return new OpenDistroClient(builder);
     }
 
     private String getUsername() {
@@ -95,7 +100,7 @@ public class ElasticSearchConfiguration {
     }
 
     @Bean
-    public RestHighLevelClient elasticsearchClient() {
+    public OpenDistroClient opendistroClient() {
         return client;
     }
 

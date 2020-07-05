@@ -100,6 +100,7 @@ paths:
     post:
       summary: Generate a JWT Token.
       operationId: authenticate
+      security: []
       parameters:
         - name: username
           in: query
@@ -129,6 +130,9 @@ paths:
     get:
       summary: Get a list of jobs.
       operationId: list-jobs
+      security:
+        - euler-auth:
+            - euler-admin
       parameters:
         - name: page
           in: query
@@ -191,6 +195,9 @@ paths:
           schema:
             type: boolean
             default: false
+      security:
+        - euler-auth:
+            - euler-admin
       responses:
         '200':
           description: A JSON of the new job.
@@ -206,6 +213,9 @@ paths:
     get:
       summary: Get the details of the job.
       operationId: get-jobs-details
+      security:
+        - euler-auth:
+            - euler-admin
       parameters:
         - name: job-id
           in: path
@@ -227,6 +237,9 @@ paths:
     post:
       summary: Enqueue a new job for execution
       operationId: enqueue-job
+      security:
+        - euler-auth:
+            - euler-admin
       parameters:
         - name: job-id
           in: path
@@ -246,6 +259,9 @@ paths:
     delete:
       summary: Cancel the job execution.
       operationId: cancel-job
+      security:
+        - euler-auth:
+            - euler-admin
       parameters:
         - name: job-id
           in: path
@@ -267,6 +283,9 @@ paths:
     get:
       summary: Get a list of statistics about the job.
       operationId: get-jobs-statistics
+      security:
+        - euler-auth:
+            - euler-admin
       parameters:
         - name: job-id
           in: path
@@ -287,5 +306,3 @@ paths:
           description: Job not found
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-security:
-  - euler-auth: []

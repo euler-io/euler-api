@@ -18,7 +18,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 @Configuration
 public class SwaggerAuthConfig extends SwaggerDocumentationConfig {
 
-    public static final String DEFAULT_INCLUDE_PATTERN = "/.*";
+    public static final String DEFAULT_INCLUDE_PATTERN = "\\/(jobs|job|statistics)\\/?.*";
 
     @Bean
     @Primary
@@ -42,7 +42,7 @@ public class SwaggerAuthConfig extends SwaggerDocumentationConfig {
 
     List<SecurityReference> defaultAuth() {
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[]{
-                new AuthorizationScope("global", "accessEverything")
+                new AuthorizationScope("euler-auth", "Euler admin role.")
         };
         return Arrays.asList(
                 new SecurityReference("JWT", authorizationScopes));

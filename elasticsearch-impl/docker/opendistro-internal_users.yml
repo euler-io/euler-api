@@ -15,6 +15,7 @@ admin:
   reserved: true
   backend_roles:
   - "admin"
+  - "euler-admin"
   description: "Demo admin user"
 
 euler-admin:

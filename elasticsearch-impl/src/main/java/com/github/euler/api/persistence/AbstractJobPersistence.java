@@ -7,7 +7,6 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -19,10 +18,11 @@ import com.github.euler.api.model.Job;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
+import com.github.euler.opendistro.OpenDistroClient;
 
 public abstract class AbstractJobPersistence<J extends Job> extends ESPersistence {
 
-    public AbstractJobPersistence(RestHighLevelClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
+    public AbstractJobPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
         super(client, configuration, objectMapper);
     }
 

@@ -8,18 +8,19 @@ import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.MainResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.github.euler.opendistro.OpenDistroClient;
+
 @Component("com.github.euler.api.WaitElasticsearchBean")
 public class WaitElasticsearchBean {
 
-    private RestHighLevelClient client;
+    private OpenDistroClient client;
 
     @Autowired
-    public WaitElasticsearchBean(RestHighLevelClient client) {
+    public WaitElasticsearchBean(OpenDistroClient client) {
         super();
         this.client = client;
     }
