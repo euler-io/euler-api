@@ -98,21 +98,41 @@ components:
       type: object
       properties:
         name:
-          title: The name of the template. It must be unique and contains only words, numbers, hyphens or underscores.
+          title: The name of the template. It must be unique and contains only lowercase words, numbers, hyphens or underscores.
           type: string
     TemplateConfig:
       allOf:
         - $ref: '#/components/schemas/Template'
       properties:
         config:
-          title: The template json configuration.
-          type: object
+          title: The template json configuration using hocon format.
+          type: string
       required:
         - config
     TemplateDetails:
       allOf:
         - $ref: '#/components/schemas/Template'
         - $ref: '#/components/schemas/TemplateConfig'
+    TemplateList:
+      type: object
+      properties:
+        total:
+          type: integer
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
+    TemplateParams:
+      properties:
+        params:
+          title: The template parameters configuration.
+          type: object
+        seed:
+          title: The job seed uri.
+          type: string
+      required:
+        - params
+        - seed
       
 paths:
   /auth:
@@ -206,6 +226,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/JobConfig'
+      externalDocs:
+        url: https://github.com/lightbend/config/blob/master/HOCON.md
       parameters:
         - name: enqueue
           in: query
@@ -359,7 +381,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobList'
+                $ref: '#/components/schemas/TemplateList'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   /template:
@@ -424,14 +446,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              example: {
-                param1: value1,
-                param2: value2,
-                param-complex: {
-                  key: value
-                },
-              }
+              $ref: '#/components/schemas/TemplateParams'
       parameters:
         - name: template-name
           in: path

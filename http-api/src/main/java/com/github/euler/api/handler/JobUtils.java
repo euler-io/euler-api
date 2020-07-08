@@ -9,7 +9,7 @@ public class JobUtils {
         Job job = new Job();
         job.setId(details.getId());
         job.setStatus(details.getStatus());
-        job.setStartDate(details.getStartDate());
+        job.setCreationDate(details.getCreationDate());
         job.setEndDate(details.getEndDate());
         return job;
     }

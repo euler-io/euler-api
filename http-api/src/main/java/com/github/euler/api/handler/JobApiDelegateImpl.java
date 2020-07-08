@@ -36,7 +36,7 @@ public class JobApiDelegateImpl implements JobApiDelegate {
     public ResponseEntity<Job> createNewJob(JobConfig body, Boolean enqueue) {
         try {
             JobDetails jobDetails = new JobDetails();
-            jobDetails.setStartDate(OffsetDateTime.now());
+            jobDetails.setCreationDate(OffsetDateTime.now());
             jobDetails.setStatus(JobStatus.NEW);
             jobDetails.setConfig(body.getConfig());
             jobDetails.setSeed(body.getSeed());
