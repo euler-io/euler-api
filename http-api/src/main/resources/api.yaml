@@ -118,11 +118,12 @@ components:
       properties:
         total:
           type: integer
-        jobs:
+        templates:
           type: array
           items:
             $ref: '#/components/schemas/Template'
     TemplateParams:
+      type: object
       properties:
         params:
           title: The template parameters configuration.
@@ -133,6 +134,47 @@ components:
       required:
         - params
         - seed
+    ContextConverter:
+      type: object
+      properties:
+        path:
+          type: string
+        description:
+          type: string
+    TypeConverter:
+      type: object
+      properties:
+        type:
+          type: string
+        config-type:
+          type: string
+        description:
+          type: string
+    TaskConverter:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+    Extension:
+      type: object
+      properties:
+        description:
+          type: string
+        path-converters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContextConverter'
+        type-converters:
+          type: array
+          items:
+            $ref: '#/components/schemas/TypeConverter'
+        task-converters:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskConverter'
+          
       
 paths:
   /auth:
@@ -481,6 +523,26 @@ paths:
           description: HTTP status code of the current operation.
         '400':
           description: When the job can't be deleted.
+        '404':
+          description: Job not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /extensions:
+    get:
+      summary: Get the installed extensions.
+      operationId: get-extensions
+      security:
+        - euler-auth:
+            - euler-admin
+      responses:
+        '200':
+          description: A JSON array of installed extensions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Extension'
         '404':
           description: Job not found
         '401':

@@ -12,7 +12,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.api.APIConfiguration;
 import com.github.euler.api.model.Job;
 import com.github.euler.api.model.JobStatus;
@@ -22,8 +21,11 @@ import com.github.euler.opendistro.OpenDistroClient;
 
 public abstract class AbstractJobPersistence<J extends Job> extends ESPersistence {
 
-    public AbstractJobPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
-        super(client, configuration, objectMapper);
+    protected final APIConfiguration configuration;
+
+    public AbstractJobPersistence(OpenDistroClient client, APIConfiguration configuration) {
+        super(client);
+        this.configuration = configuration;
     }
 
     protected String getJobIndex() {

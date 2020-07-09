@@ -9,11 +9,14 @@ import org.springframework.stereotype.Service;
 
 import com.github.euler.api.APICommand;
 import com.github.euler.api.JobGenerator;
+import com.github.euler.api.JobToEnqueue;
+import com.github.euler.api.model.Job;
 import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.Template;
 import com.github.euler.api.model.TemplateConfig;
 import com.github.euler.api.model.TemplateDetails;
 import com.github.euler.api.model.TemplateParams;
+import com.github.euler.api.persistence.JobDetailsPersistence;
 import com.github.euler.api.persistence.TemplatePersistence;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -25,14 +28,16 @@ import akka.actor.typed.ActorSystem;
 public class TemplateApiDelegateImpl implements TemplateApiDelegate {
 
     private final ActorSystem<APICommand> system;
+    private final JobDetailsPersistence jobDetailsPersistence;
     private final TemplatePersistence persistence;
     private final TemplateNameValidator validator;
     private final JobGenerator jobGenerator;
 
     @Autowired
-    public TemplateApiDelegateImpl(ActorSystem<APICommand> system, TemplatePersistence persistence) {
+    public TemplateApiDelegateImpl(ActorSystem<APICommand> system, JobDetailsPersistence jobDetailsPersistence, TemplatePersistence persistence) {
         super();
         this.system = system;
+        this.jobDetailsPersistence = jobDetailsPersistence;
         this.persistence = persistence;
         validator = new TemplateNameValidator();
         jobGenerator = new JobGenerator();
@@ -71,11 +76,17 @@ public class TemplateApiDelegateImpl implements TemplateApiDelegate {
         try {
             TemplateDetails template = persistence.get(templateName);
             JobDetails details = jobGenerator.generate(template, params);
+            Job job = JobUtils.fromDetails(jobDetailsPersistence.create(details));
+            enqueueJob(job.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             throw new RuntimeException(e);
         }
+    }
+
+    public void enqueueJob(String jobId) {
+        JobToEnqueue msg = new JobToEnqueue(jobId);
+        system.tell(msg);
     }
 
     @Override

@@ -13,7 +13,7 @@ import com.github.euler.opendistro.OpenDistroClient;
 public class ESJobStatisticsPersistence extends ESPersistence implements JobStatisticsPersistence {
 
     public ESJobStatisticsPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
-        super(client, configuration, objectMapper);
+        super(client);
     }
 
     @Override

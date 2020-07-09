@@ -9,8 +9,6 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.euler.api.APIConfiguration;
 import com.github.euler.opendistro.OpenDistroClient;
 
 public abstract class ESPersistence {
@@ -18,14 +16,10 @@ public abstract class ESPersistence {
     private static final Logger LOGGER = LoggerFactory.getLogger(ESPersistence.class);
 
     protected final OpenDistroClient client;
-    protected final APIConfiguration configuration;
-    protected final ObjectMapper objectMapper;
 
-    public ESPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
+    public ESPersistence(OpenDistroClient client) {
         super();
         this.client = client;
-        this.configuration = configuration;
-        this.objectMapper = objectMapper;
     }
 
     protected void initializeIndex(String index, String jsonMapping, RequestOptions opts) throws IOException {

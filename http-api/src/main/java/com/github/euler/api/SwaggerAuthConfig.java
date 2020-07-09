@@ -30,7 +30,7 @@ public class SwaggerAuthConfig extends SwaggerDocumentationConfig {
     }
 
     private ApiKey apiKey() {
-        return new ApiKey("euler-auth", "JWT Authorization", "header");
+        return new ApiKey("euler-auth", "Authorization", "header");
     }
 
     private SecurityContext securityContext() {

@@ -7,9 +7,11 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
@@ -29,13 +31,16 @@ import com.typesafe.config.ConfigRenderOptions;
 @DependsOn("com.github.euler.api.WaitElasticsearchBean")
 public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> implements JobDetailsPersistence {
 
+    private final ObjectMapper objectMapper;
     private final ObjectWriter writer;
     private final ObjectReader reader;
 
+    @Autowired
     public ESJobDetailsPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
-        super(client, configuration, objectMapper);
-        writer = objectMapper.writerFor(JobDetails.class);
-        reader = objectMapper.readerFor(JobDetails.class);
+        super(client, configuration);
+        this.objectMapper = objectMapper;
+        this.writer = this.objectMapper.writerFor(JobDetails.class);
+        this.reader = this.objectMapper.readerFor(JobDetails.class);
     }
 
     @PostConstruct
@@ -57,7 +62,8 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
         IndexRequest req = new IndexRequest(getJobIndex());
         req.id(job.getId());
         req.source(toBytes(job), XContentType.JSON);
-        client.index(req, RequestOptions.DEFAULT);
+        IndexResponse resp = client.index(req, RequestOptions.DEFAULT);
+        job.setId(resp.getId());
         return job;
     }
 
@@ -80,7 +86,9 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
 
     protected JobDetails convert(SearchHit h) {
         Map<String, Object> source = h.getSourceAsMap();
-        return objectMapper.convertValue(source, JobDetails.class);
+        JobDetails details = objectMapper.convertValue(source, JobDetails.class);
+        details.setId(h.getId());
+        return details;
     }
 
 }

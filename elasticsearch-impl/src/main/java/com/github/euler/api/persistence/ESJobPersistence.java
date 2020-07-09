@@ -9,11 +9,14 @@ import java.util.stream.Collectors;
 
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.search.SearchHit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.github.euler.api.APIConfiguration;
@@ -27,11 +30,14 @@ import com.github.euler.opendistro.OpenDistroClient;
 @Service
 public class ESJobPersistence extends AbstractJobPersistence<Job> implements JobPersistence {
 
-    private ObjectReader reader;
+    private final ObjectMapper objectMapper;
+    private final ObjectReader reader;
 
+    @Autowired
     public ESJobPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
-        super(client, configuration, objectMapper);
-        reader = objectMapper.readerFor(Job.class);
+        super(client, configuration);
+        this.objectMapper = objectMapper.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.reader = this.objectMapper.readerFor(Job.class);
     }
 
     @Override
@@ -56,7 +62,9 @@ public class ESJobPersistence extends AbstractJobPersistence<Job> implements Job
 
     protected Job convert(SearchHit h) {
         Map<String, Object> source = h.getSourceAsMap();
-        return objectMapper.convertValue(source, Job.class);
+        Job job = objectMapper.convertValue(source, Job.class);
+        job.setId(h.getId());
+        return job;
     }
 
     @Override
@@ -66,7 +74,8 @@ public class ESJobPersistence extends AbstractJobPersistence<Job> implements Job
 
     @Override
     public void updateStatus(String id, JobStatus status) throws IOException {
-        UpdateRequest req = new UpdateRequest(getJobIndex(), id);
+        UpdateRequest req = new UpdateRequest(getJobIndex(), id)
+                .setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
         Map<String, Object> source = new HashMap<>();
         source.put("status", status);
         req.doc(source);

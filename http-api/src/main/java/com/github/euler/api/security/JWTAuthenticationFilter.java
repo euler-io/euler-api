@@ -50,7 +50,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         resp.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
         resp.setContentType("text/plain");
         resp.setCharacterEncoding("utf-8");
-        resp.getWriter().write(token);
+        resp.getWriter().write(TOKEN_PREFIX + token);
     }
 
 }
