@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
@@ -62,6 +63,7 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
         IndexRequest req = new IndexRequest(getJobIndex());
         req.id(job.getId());
         req.source(toBytes(job), XContentType.JSON);
+        req.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
         IndexResponse resp = client.index(req, RequestOptions.DEFAULT);
         job.setId(resp.getId());
         return job;
