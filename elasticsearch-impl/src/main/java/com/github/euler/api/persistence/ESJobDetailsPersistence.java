@@ -79,9 +79,10 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
 
     @Override
     public JobDetails getNext() throws IOException {
-        SearchHit[] hits = listJobs(0, 1, SortBy.ENQUEUED_DATE, SortDirection.ASC, JobStatus.ENQUEUED).getHits().getHits();
+        SearchHit[] hits = listJobs(0, 10, SortBy.ENQUEUED_DATE, SortDirection.ASC, JobStatus.ENQUEUED, false).getHits().getHits();
         return Arrays.stream(hits)
                 .map(h -> convert(h))
+                .filter(j -> j.getStatus() == JobStatus.ENQUEUED)
                 .findFirst()
                 .orElse(null);
     }

@@ -23,6 +23,13 @@ public class TemplatesApiDelegateImpl implements TemplatesApiDelegate {
 
     @Override
     public ResponseEntity<TemplateList> listTemplates(Integer page, Integer size, String name) {
+        if (page == null) {
+            page = 0;
+        }
+        if (size == null) {
+            size = 10;
+        }
+        size = Math.min(size, 1000);
         TemplateList list;
         try {
             list = persistence.list(page, size, name);

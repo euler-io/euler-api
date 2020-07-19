@@ -36,7 +36,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests().antMatchers(LOGIN_PROCESSING_URL, "/", "/swagger-ui.html").permitAll()
                 .and().authorizeRequests()
-                .antMatchers("/job/**", "/jobs/**", "/statistics/**")
+                .antMatchers("/job/**", "/jobs/**", "/statistics/**", "/extensions/**")
                 .hasAnyAuthority(REQUIRED_ROLE)
                 .and().addFilter(authenticationFilter).addFilter(authorizationFilter);
     }

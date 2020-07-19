@@ -119,9 +119,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
             if (msg.replyTo != null) {
                 msg.replyTo.tell(new JobEnqueued(msg));
             }
-            if (isSpotAvailable()) {
-                processNext();
-            }
+            scheduleProcessNext();
         } else if (msg.replyTo != null) {
             msg.replyTo.tell(new JobStatusInvalid(msg.jobId, "Impossible to enqueue job with status " + status));
         }
@@ -129,15 +127,19 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     }
 
     private void process(JobDetails jobDetails) throws IOException, URISyntaxException {
-        Object rawConfig = jobDetails.getConfig();
-        String json = mapper.writer().writeValueAsString(rawConfig);
+        Config config = getConfig(jobDetails);
         URI uri = new URI(jobDetails.getSeed());
-        Config config = ConfigFactory.parseString(json);
         ActorRef<JobCommand> ref = spawn(jobDetails.getId(), config);
         state.running();
         persistence.updateStatus(jobDetails.getId(), JobStatus.RUNNING);
         APIJob jobMsg = new APIJob(jobDetails.getId(), uri, responseAdaptor);
         ref.tell(jobMsg);
+    }
+
+    private Config getConfig(JobDetails jobDetails) throws IOException {
+        Object rawConfig = jobDetails.getConfig();
+        String json = mapper.writer().writeValueAsString(rawConfig);
+        return ConfigFactory.parseString(json);
     }
 
     private ActorRef<JobCommand> spawn(String jobId, Config config) {
@@ -164,17 +166,23 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         if (original != null && original.replyTo != null) {
             original.replyTo.tell(new JobFinished(msg));
         }
-        if (isSpotAvailable()) {
-            processNext();
-        }
+        scheduleProcessNext();
         return this;
     }
 
     private void processNext() throws IOException, URISyntaxException {
+        getContext().getLog().info("Looking for new job to run in the queue.");
         JobDetails next = detailsPersistence.getNext();
         if (next != null) {
+            getContext().getLog().info("Found job {} in the queue.", next.getId());
             process(next);
+        } else {
+            getContext().getLog().info("No jobs found in the queue.");
         }
+    }
+
+    private void scheduleProcessNext() {
+        getContext().getSelf().tell(new StartQueue());
     }
 
     private boolean isSpotAvailable() {

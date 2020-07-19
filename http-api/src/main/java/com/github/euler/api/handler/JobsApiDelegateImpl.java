@@ -26,6 +26,19 @@ public class JobsApiDelegateImpl implements JobsApiDelegate {
 
     @Override
     public ResponseEntity<JobList> listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus status) {
+        if (page == null) {
+            page = 0;
+        }
+        if (size == null) {
+            size = 10;
+        }
+        size = Math.min(size, 1000);
+        if (sortBy == null) {
+            sortBy = SortBy.CREATION_DATE;
+        }
+        if (sortDirection == null) {
+            sortDirection = SortDirection.ASC;
+        }
         JobList list;
         try {
             list = persistence.list(page, size, sortBy, sortDirection, status);

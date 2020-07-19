@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 import io.swagger.configuration.SwaggerDocumentationConfig;
 import springfox.documentation.builders.PathSelectors;
@@ -18,10 +17,9 @@ import springfox.documentation.spring.web.plugins.Docket;
 @Configuration
 public class SwaggerAuthConfig extends SwaggerDocumentationConfig {
 
-    public static final String DEFAULT_INCLUDE_PATTERN = "\\/(jobs|job|statistics)\\/?.*";
+    public static final String DEFAULT_INCLUDE_PATTERN = "\\/(jobs|job|statistics|extensions)\\/?.*";
 
     @Bean
-    @Primary
     @Override
     public Docket customImplementation() {
         return super.customImplementation()
@@ -41,7 +39,7 @@ public class SwaggerAuthConfig extends SwaggerDocumentationConfig {
     }
 
     List<SecurityReference> defaultAuth() {
-        AuthorizationScope[] authorizationScopes = new AuthorizationScope[]{
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[] {
                 new AuthorizationScope("euler-auth", "Euler admin role.")
         };
         return Arrays.asList(

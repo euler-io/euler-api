@@ -42,13 +42,7 @@ public class ESJobPersistence extends AbstractJobPersistence<Job> implements Job
 
     @Override
     public JobList list(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus status) throws IOException {
-        if (sortBy == null) {
-            sortBy = SortBy.CREATION_DATE;
-        }
-        if (sortDirection == null) {
-            sortDirection = SortDirection.ASC;
-        }
-        SearchResponse response = listJobs(page, size, sortBy, sortDirection, status);
+        SearchResponse response = listJobs(page, size, sortBy, sortDirection, status, true);
         List<Job> jobs = Arrays.stream(response.getHits().getHits())
                 .map(h -> convert(h))
                 .collect(Collectors.toList());

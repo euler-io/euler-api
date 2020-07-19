@@ -32,8 +32,9 @@ public abstract class AbstractJobPersistence<J extends Job> extends ESPersistenc
         return configuration.getConfig().getString("euler.http-api.elasticsearch.job-index.name");
     }
 
-    protected SearchResponse listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus status) throws IOException {
+    protected SearchResponse listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus status, boolean requestCache) throws IOException {
         SearchRequest req = new SearchRequest(getJobIndex());
+        req.requestCache(requestCache);
         QueryBuilder query;
         if (status != null) {
             query = QueryBuilders.termQuery("status", status);
@@ -44,7 +45,7 @@ public abstract class AbstractJobPersistence<J extends Job> extends ESPersistenc
         searchSourceBuilder.query(query);
         searchSourceBuilder.size(size);
         searchSourceBuilder.from(page * size);
-        searchSourceBuilder.sort(sortBy.toString().toLowerCase(), SortOrder.fromString(sortDirection.toString()));
+        searchSourceBuilder.sort(sortBy.toString().toLowerCase().replace('_', '-'), SortOrder.fromString(sortDirection.toString()));
         return client.search(req, RequestOptions.DEFAULT);
     }
 

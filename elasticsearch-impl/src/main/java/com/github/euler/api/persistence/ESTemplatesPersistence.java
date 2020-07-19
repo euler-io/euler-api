@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -37,10 +37,13 @@ public class ESTemplatesPersistence extends AbstractTemplatePersistence implemen
     public TemplateList list(Integer page, Integer size, String name) throws IOException {
         SearchRequest req = new SearchRequest(getTemplateIndex());
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        QueryBuilder query = QueryBuilders.boolQuery()
+        BoolQueryBuilder query = QueryBuilders.boolQuery()
                 .should(QueryBuilders.idsQuery().addIds(name))
-                .should(QueryBuilders.matchQuery("name", name))
                 .minimumShouldMatch(1);
+
+        if (name != null && !name.isBlank()) {
+            query.should(QueryBuilders.matchQuery("name", name));
+        }
         searchSourceBuilder.query(query);
         searchSourceBuilder.size(size);
         searchSourceBuilder.from(page * size);

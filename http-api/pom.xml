@@ -20,6 +20,7 @@
         <beanvalidation-version>1.1.0.Final</beanvalidation-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <euler-version>0.1.0-SNAPSHOT</euler-version>
+        <akka.version>2.6.5</akka.version>
     </properties>
     <dependencies>
         <dependency>
@@ -109,6 +110,17 @@
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
         </dependency>
+        <!-- Logging -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j_2.13</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -134,6 +146,7 @@
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/api.yaml</inputSpec>
                             <language>spring</language>
+                            <templateDirectory>${project.basedir}/swagger</templateDirectory>
                             <configOptions>
                                 <apiPackage>com.github.euler.api.handler</apiPackage>
                                 <modelPackage>com.github.euler.api.model</modelPackage>
