@@ -115,7 +115,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         JobStatus status = job.getStatus();
         if (status == JobStatus.NEW) {
             state.enqueue(msg);
-            persistence.updateStatus(msg.jobId, JobStatus.ENQUEUED);
+            persistence.updateEnqueued(msg.jobId);
             if (msg.replyTo != null) {
                 msg.replyTo.tell(new JobEnqueued(msg));
             }
@@ -131,7 +131,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         URI uri = new URI(jobDetails.getSeed());
         ActorRef<JobCommand> ref = spawn(jobDetails.getId(), config);
         state.running();
-        persistence.updateStatus(jobDetails.getId(), JobStatus.RUNNING);
+        persistence.updateRunning(jobDetails.getId());
         APIJob jobMsg = new APIJob(jobDetails.getId(), uri, responseAdaptor);
         ref.tell(jobMsg);
     }
@@ -161,7 +161,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     }
 
     private Behavior<APICommand> onJobProcessed(APIJobProcessed msg) throws IOException, URISyntaxException {
-        persistence.updateStatus(msg.jobId, JobStatus.FINISHED);
+        persistence.updateFinished(msg.jobId);
         JobToEnqueue original = state.processed(msg);
         if (original != null && original.replyTo != null) {
             original.replyTo.tell(new JobFinished(msg));

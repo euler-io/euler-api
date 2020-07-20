@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.monitorjbl.json.JsonViewModule;
 
 @Configuration
 public class MappingConfiguration {
@@ -18,6 +19,7 @@ public class MappingConfiguration {
         module.addSerializer(OffsetDateTime.class, new OffsetDateTimeIO.Serializer());
         module.addDeserializer(OffsetDateTime.class, new OffsetDateTimeIO.Deserializer());
         mapper.registerModule(module);
+        mapper.registerModule(new JsonViewModule());
         return mapper;
     }
 }

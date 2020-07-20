@@ -41,9 +41,9 @@ public class APIQueueTest extends AkkaTest {
         job.setId(jobId);
         job.setStatus(JobStatus.NEW);
         when(persistence.get(jobId)).thenReturn(job);
-        persistence.updateStatus(eq(jobId), eq(JobStatus.ENQUEUED));
-        persistence.updateStatus(eq(jobId), eq(JobStatus.RUNNING));
-        persistence.updateStatus(eq(jobId), eq(JobStatus.FINISHED));
+        persistence.updateEnqueued(eq(jobId));
+        persistence.updateRunning(eq(jobId));
+        persistence.updateFinished(eq(jobId));
 
         JobDetailsPersistence detailsPersistence = mock(JobDetailsPersistence.class);
         JobDetails jobDetails = new JobDetails();
@@ -62,9 +62,9 @@ public class APIQueueTest extends AkkaTest {
 
         // verify mock
         verify(persistence).get(jobId);
-        verify(persistence).updateStatus(eq(jobId), eq(JobStatus.ENQUEUED));
-        verify(persistence).updateStatus(eq(jobId), eq(JobStatus.RUNNING));
-        verify(persistence).updateStatus(eq(jobId), eq(JobStatus.FINISHED));
+        verify(persistence).updateEnqueued(eq(jobId));
+        verify(persistence).updateRunning(eq(jobId));
+        verify(persistence).updateFinished(eq(jobId));
         verify(detailsPersistence, times(2)).getNext();
     }
 
@@ -87,12 +87,12 @@ public class APIQueueTest extends AkkaTest {
         job2.setId(jobId2);
         job2.setStatus(JobStatus.NEW);
         when(persistence.get(jobId2)).thenReturn(job2);
-        persistence.updateStatus(eq(jobId1), eq(JobStatus.ENQUEUED));
-        persistence.updateStatus(eq(jobId1), eq(JobStatus.RUNNING));
-        persistence.updateStatus(eq(jobId1), eq(JobStatus.FINISHED));
-        persistence.updateStatus(eq(jobId2), eq(JobStatus.ENQUEUED));
-        persistence.updateStatus(eq(jobId2), eq(JobStatus.RUNNING));
-        persistence.updateStatus(eq(jobId2), eq(JobStatus.FINISHED));
+        persistence.updateEnqueued(eq(jobId1));
+        persistence.updateRunning(eq(jobId1));
+        persistence.updateFinished(eq(jobId1));
+        persistence.updateEnqueued(eq(jobId2));
+        persistence.updateRunning(eq(jobId2));
+        persistence.updateFinished(eq(jobId2));
 
         JobDetailsPersistence detailsPersistence = mock(JobDetailsPersistence.class);
         JobDetails jobDetails1 = new JobDetails();
@@ -118,16 +118,16 @@ public class APIQueueTest extends AkkaTest {
         assertEquals(jobId1, probe.expectMessageClass(JobFinished.class).jobId);
         // verify mock
         verify(persistence).get(jobId1);
-        verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.ENQUEUED));
-        verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.RUNNING));
-        verify(persistence).updateStatus(eq(jobId1), eq(JobStatus.FINISHED));
+        verify(persistence).updateEnqueued(eq(jobId1));
+        verify(persistence).updateRunning(eq(jobId1));
+        verify(persistence).updateFinished(eq(jobId1));
 
         assertEquals(jobId2, probe.expectMessageClass(JobFinished.class).jobId);
         // verify mock
         verify(persistence).get(jobId2);
-        verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.ENQUEUED));
-        verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.RUNNING));
-        verify(persistence).updateStatus(eq(jobId2), eq(JobStatus.FINISHED));
+        verify(persistence).updateEnqueued(eq(jobId2));
+        verify(persistence).updateRunning(eq(jobId2));
+        verify(persistence).updateFinished(eq(jobId2));
         verify(detailsPersistence, times(3)).getNext();
     }
 
@@ -310,8 +310,8 @@ public class APIQueueTest extends AkkaTest {
 
         // mocking
         JobPersistence persistence = mock(JobPersistence.class);
-        persistence.updateStatus(eq(jobId), eq(JobStatus.RUNNING));
-        persistence.updateStatus(eq(jobId), eq(JobStatus.FINISHED));
+        persistence.updateRunning(eq(jobId));
+        persistence.updateFinished(eq(jobId));
 
         JobDetailsPersistence detailsPersistence = mock(JobDetailsPersistence.class);
         JobDetails jobDetails = new JobDetails();
@@ -326,8 +326,8 @@ public class APIQueueTest extends AkkaTest {
         Thread.sleep(500);
 
         // verify mock
-        verify(persistence).updateStatus(eq(jobId), eq(JobStatus.RUNNING));
-        verify(persistence).updateStatus(eq(jobId), eq(JobStatus.FINISHED));
+        verify(persistence).updateRunning(eq(jobId));
+        verify(persistence).updateFinished(eq(jobId));
         verify(detailsPersistence, times(2)).getNext();
     }
 

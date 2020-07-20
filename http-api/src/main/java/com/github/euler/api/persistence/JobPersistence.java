@@ -18,4 +18,10 @@ public interface JobPersistence {
 
     void delete(String id) throws IOException;
 
+    void updateFinished(String id) throws IOException;
+
+    void updateEnqueued(String id) throws IOException;
+
+    void updateRunning(String id) throws IOException;
+
 }

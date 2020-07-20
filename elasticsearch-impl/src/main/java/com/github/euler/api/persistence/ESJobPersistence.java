@@ -1,6 +1,7 @@
 package com.github.euler.api.persistence;
 
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.github.euler.api.APIConfiguration;
+import com.github.euler.api.OffsetDateTimeIO;
 import com.github.euler.api.model.Job;
 import com.github.euler.api.model.JobList;
 import com.github.euler.api.model.JobStatus;
@@ -32,12 +34,14 @@ public class ESJobPersistence extends AbstractJobPersistence<Job> implements Job
 
     private final ObjectMapper objectMapper;
     private final ObjectReader reader;
+    private final OffsetDateTimeIO.Serializer serializer;
 
     @Autowired
     public ESJobPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
         super(client, configuration);
         this.objectMapper = objectMapper.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.reader = this.objectMapper.readerFor(Job.class);
+        this.serializer = new OffsetDateTimeIO.Serializer();
     }
 
     @Override
@@ -67,19 +71,47 @@ public class ESJobPersistence extends AbstractJobPersistence<Job> implements Job
     }
 
     @Override
-    public void updateStatus(String id, JobStatus status) throws IOException {
-        UpdateRequest req = new UpdateRequest(getJobIndex(), id)
-                .setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-        Map<String, Object> source = new HashMap<>();
-        source.put("status", status);
-        req.doc(source);
-        client.update(req, RequestOptions.DEFAULT);
-    }
-
-    @Override
     public void delete(String id) throws IOException {
         DeleteRequest req = new DeleteRequest(getJobIndex(), id);
         client.delete(req, RequestOptions.DEFAULT);
+    }
+
+    @Override
+    public void updateStatus(String id, JobStatus status) throws IOException {
+        Map<String, Object> source = new HashMap<>();
+        source.put("status", status);
+        update(id, source);
+    }
+
+    @Override
+    public void updateFinished(String id) throws IOException {
+        Map<String, Object> source = new HashMap<>();
+        source.put("status", JobStatus.FINISHED);
+        source.put("end-date", serializer.serialize(OffsetDateTime.now()));
+        update(id, source);
+    }
+
+    @Override
+    public void updateEnqueued(String id) throws IOException {
+        Map<String, Object> source = new HashMap<>();
+        source.put("status", JobStatus.ENQUEUED);
+        source.put("enqueued-date", serializer.serialize(OffsetDateTime.now()));
+        update(id, source);
+    }
+
+    @Override
+    public void updateRunning(String id) throws IOException {
+        Map<String, Object> source = new HashMap<>();
+        source.put("status", JobStatus.RUNNING);
+        source.put("start-date", serializer.serialize(OffsetDateTime.now()));
+        update(id, source);
+    }
+
+    private void update(String id, Map<String, Object> source) throws IOException {
+        UpdateRequest req = new UpdateRequest(getJobIndex(), id)
+                .setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+        req.doc(source);
+        client.update(req, RequestOptions.DEFAULT);
     }
 
 }

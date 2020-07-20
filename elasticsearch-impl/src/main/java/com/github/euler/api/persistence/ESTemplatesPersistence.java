@@ -16,6 +16,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.api.APIConfiguration;
 import com.github.euler.api.model.Template;
@@ -30,7 +31,7 @@ public class ESTemplatesPersistence extends AbstractTemplatePersistence implemen
     @Autowired
     public ESTemplatesPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
         super(client, configuration);
-        this.objectMapper = objectMapper;
+        this.objectMapper = objectMapper.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Override

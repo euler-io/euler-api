@@ -1,5 +1,7 @@
 package com.github.euler.api.persistence;
 
+import static com.monitorjbl.json.Match.match;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -19,13 +21,13 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.euler.api.APIConfiguration;
 import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
 import com.github.euler.opendistro.OpenDistroClient;
+import com.monitorjbl.json.JsonView;
 import com.typesafe.config.ConfigRenderOptions;
 
 @Service
@@ -33,14 +35,12 @@ import com.typesafe.config.ConfigRenderOptions;
 public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> implements JobDetailsPersistence {
 
     private final ObjectMapper objectMapper;
-    private final ObjectWriter writer;
     private final ObjectReader reader;
 
     @Autowired
     public ESJobDetailsPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
         super(client, configuration);
         this.objectMapper = objectMapper;
-        this.writer = this.objectMapper.writerFor(JobDetails.class);
         this.reader = this.objectMapper.readerFor(JobDetails.class);
     }
 
@@ -71,7 +71,7 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
 
     private byte[] toBytes(JobDetails job) {
         try {
-            return writer.writeValueAsBytes(job);
+            return this.objectMapper.writeValueAsBytes(JsonView.with(job).onClass(JobDetails.class, match().exclude("id")));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
