@@ -2,24 +2,134 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>io.swagger</groupId>
-    <artifactId>swagger-spring</artifactId>
+    <groupId>com.github.euler-io</groupId>
+    <artifactId>euler-api</artifactId>
     <packaging>pom</packaging>
-    <name>swagger-spring</name>
-    <version>1.0.0</version>
+    <name>Euler API - Parent</name>
+    <version>0.1.2-SNAPSHOT</version>
+    <url>https://github.com/euler-io/euler-api</url>
+    <description>Euler - Http API.</description>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License v3.0</name>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>filipesimoes</id>
+            <name>Filipe Simoes</name>
+            <email>835586+filipesimoes@users.noreply.github.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/euler-io/euler-api</url>
+        <connection>scm:git:ssh://git@github.com/euler-io/euler-api.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/euler-io/euler-api.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
-        <java.version>1.7</java.version>
+        <java.version>11</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <springfox-version>2.9.2</springfox-version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <downloadSources>true</downloadSources>
+        <downloadJavadocs>true</downloadJavadocs>
+        <euler.version>0.1.2</euler.version>
     </properties>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.22.RELEASE</version>
-    </parent>
     <modules>
         <module>http-api</module>
         <module>elasticsearch-impl</module>
     </modules>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.euler-io</groupId>
+                <artifactId>euler-config</artifactId>
+                <version>${euler.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <tagNameFormat>@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Prevent `gpg` from using pinentry 
+                                        programs -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <distributionManagement>
+        <!-- Central Repository -->
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>oss-sonatype-releases</id>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
