@@ -6,11 +6,11 @@
     <artifactId>elasticsearch-impl</artifactId>
     <packaging>jar</packaging>
     <name>Euler HTTP API - Elasticsearch Implementation</name>
-    <version>0.1.2</version>
+    <version>0.1.3-SNAPSHOT</version>
     <parent>
         <groupId>com.github.euler-io</groupId>
         <artifactId>euler-api</artifactId>
-        <version>0.1.2</version>
+        <version>0.1.3-SNAPSHOT</version>
     </parent>
     <dependencies>
         <dependency>
