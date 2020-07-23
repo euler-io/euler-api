@@ -39,6 +39,7 @@
         <downloadSources>true</downloadSources>
         <downloadJavadocs>true</downloadJavadocs>
         <euler.version>0.1.2</euler.version>
+        <docker.repository>eulerio/euler-api</docker.repository>
     </properties>
     <modules>
         <module>http-api</module>
@@ -121,7 +122,7 @@
     <repositories>
         <repository>
             <id>oss-sonatype-releases</id>
-            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
