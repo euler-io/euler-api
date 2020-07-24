@@ -2,7 +2,7 @@
 
 set -e
 
-mkdir /app
+mkdir -p /app/lib
 
 if [[ ${PROJECT_VERSION} == *"SNAPSHOT"* ]]; then
 	snapshotVersion=$(curl -s https://oss.sonatype.org/content/repositories/snapshots/com/github/euler-io/elasticsearch-impl/${PROJECT_VERSION}/maven-metadata.xml | grep '<value>' | head -1 | sed "s/.*<value>\([^<]*\)<\/value>.*/\1/")

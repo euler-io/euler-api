@@ -1,6 +1,7 @@
 FROM debian:buster
 
 ARG PROJECT_VERSION
+ENV JAVA_OPTS=""
 
 # Installing dependencies
 RUN apt-get update \
@@ -12,6 +13,7 @@ RUN apt-get update \
 COPY ./download-app.sh .
 RUN ./download-app.sh
 
+# Adding app group and user
 RUN addgroup --gid 1100 euler \
   && adduser --uid 1100 --disabled-password --gid 1100 euler --gecos "" \
   && chown euler:euler -R /app
@@ -22,3 +24,8 @@ RUN  apt-get clean  \
 	&& apt-get purge -y curl \
 	&& apt-get autoremove -y \
 	&& rm ./download-app.sh
+	
+USER euler
+WORKDIR /app
+
+CMD java -jar ${JAVA_OPTS} /app/opendistro-http-api.jar -classpath /app/lib com.github.euler.api.ESEulerHTTPAPI
