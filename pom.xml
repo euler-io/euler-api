@@ -43,7 +43,7 @@
     </properties>
     <modules>
         <module>http-api</module>
-        <module>elasticsearch-impl</module>
+        <module>opendistro-impl</module>
     </modules>
     <dependencyManagement>
         <dependencies>

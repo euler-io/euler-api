@@ -35,6 +35,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: eulerio/euler-api
-          path: elasticsearch-impl/docker
+          path: opendistro-impl/docker
           build_args: PROJECT_VERSION=${{ env.project_version }}
           tags: opendistro-http-api-${{ env.project_version }}
