@@ -28,13 +28,13 @@ public class APIConfigurer implements WebMvcConfigurer, WebServerFactoryCustomiz
     @Override
     public void customize(ConfigurableServletWebServerFactory factory) {
         try {
-            String host = config.getConfig().getString("euler.http.host");
+            String host = config.getConfig().getString("euler.http-api.host");
             factory.setAddress(InetAddress.getByName(host));
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        factory.setPort(config.getConfig().getInt("euler.http.port"));
-        if (config.getConfig().getBoolean("euler.http.ssl.enabled")) {
+        factory.setPort(config.getConfig().getInt("euler.http-api.port"));
+        if (config.getConfig().getBoolean("euler.http-api.ssl.enabled")) {
             initSsl(factory);
         }
     }
@@ -44,7 +44,7 @@ public class APIConfigurer implements WebMvcConfigurer, WebServerFactoryCustomiz
 
         ssl.setEnabled(true);
 
-        Config sslConfig = config.getConfig().getConfig("euler.http.ssl");
+        Config sslConfig = config.getConfig().getConfig("euler.http-api.ssl");
         if (sslConfig.hasPath("key-store")) {
             ssl.setKeyStore(sslConfig.getString("key-store"));
         }
@@ -81,7 +81,7 @@ public class APIConfigurer implements WebMvcConfigurer, WebServerFactoryCustomiz
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        List<String> allowedOrigins = config.getConfig().getStringList("euler.http.cors-allowed-origins");
+        List<String> allowedOrigins = config.getConfig().getStringList("euler.http-api.cors-allowed-origins");
         if (!allowedOrigins.isEmpty()) {
             registry.addMapping("/**").allowedOrigins(allowedOrigins.toArray(new String[allowedOrigins.size()]))
                     .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
