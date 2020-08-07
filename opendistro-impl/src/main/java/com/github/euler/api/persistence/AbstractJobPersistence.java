@@ -46,6 +46,7 @@ public abstract class AbstractJobPersistence<J extends Job> extends ESPersistenc
         searchSourceBuilder.size(size);
         searchSourceBuilder.from(page * size);
         searchSourceBuilder.sort(sortBy.toString().toLowerCase().replace('_', '-'), SortOrder.fromString(sortDirection.toString()));
+        req.source(searchSourceBuilder);
         return client.search(req, RequestOptions.DEFAULT);
     }
 
