@@ -72,13 +72,14 @@ public class TemplateApiDelegateImpl implements TemplateApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Void> enqueueTemplate(TemplateParams params, String templateName) {
+    public ResponseEntity<Job> enqueueTemplate(String templateName,
+            TemplateParams params) {
         try {
             TemplateDetails template = persistence.get(templateName);
             JobDetails details = jobGenerator.generate(template, params);
             Job job = JobUtils.fromDetails(jobDetailsPersistence.create(details));
             enqueueJob(job.getId());
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(job, HttpStatus.OK);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
