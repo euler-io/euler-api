@@ -1,6 +1,7 @@
 FROM debian:buster
 
 ARG PROJECT_VERSION
+#ARG APP_JAR
 ENV JAVA_OPTS=""
 
 # Installing dependencies
@@ -12,6 +13,8 @@ RUN apt-get update \
 # Installing app
 COPY ./download-app.sh .
 RUN ./download-app.sh
+#RUN mkdir -p /app/lib
+#COPY $APP_JAR /app/opendistro-http-api.jar
 
 # Adding app group and user
 RUN addgroup --gid 1100 euler \
