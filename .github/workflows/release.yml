@@ -16,8 +16,8 @@ jobs:
       - name: Set project version enviroment variable
         run: echo "::set-env name=project_version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)"
 
-      - name: Set git branch
-        run: echo "::set-env name=git_branch::$(echo $GITHUB_REF | cut -d'/' -f 3)"
+#      - name: Set git branch
+#        run: echo "::set-env name=git_branch::$(echo $GITHUB_REF | cut -d'/' -f 3)"
 
       - name: Install Java and Maven
         uses: actions/setup-java@v1
@@ -32,12 +32,12 @@ jobs:
           nexus_username: ${{ secrets.nexus_username }}
           nexus_password: ${{ secrets.nexus_password }}
 
-      - name: Build and push Docker images for eulerio/euler-api-opendistro
-        uses: docker/build-push-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: eulerio/euler-api-opendistro
-          path: opendistro-impl/docker
-          build_args: BRANCH=${{ env.git_branch }},COMPILE_OPTS=-Dmaven.test.skip.exec=true
-          tags: eulerio/euler-api-opendistro:${{ env.project_version }}
+#      - name: Build and push Docker images for eulerio/euler-api-opendistro
+#        uses: docker/build-push-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#          repository: eulerio/euler-api-opendistro
+#          path: opendistro-impl/docker
+#          build_args: BRANCH=${{ env.git_branch }},COMPILE_OPTS=-Dmaven.test.skip.exec=true
+#          tags: eulerio/euler-api-opendistro:${{ env.project_version }}
