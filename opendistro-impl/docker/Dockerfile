@@ -1,11 +1,10 @@
 FROM openjdk:14-jdk-buster as builder
 
 ARG BRANCH=master
+ARG COMPILE_OPTS=
 ARG MAVEN_VERSION=3.6.3
 ARG MAVEN_SHA=c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0
 ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
-
-VOLUME /mvn/.m2/repository
 
 # Install maven
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
@@ -24,7 +23,7 @@ RUN apt-get update \
 RUN mkdir /src \
 	&& cd /src \
 	&& git clone --branch $BRANCH --depth 1 https://github.com/euler-io/euler-api.git /src \
-	&& mvn clean package -Dmaven.test.skip.exec
+	&& mvn clean package $COMPILE_OPTS
 
 FROM debian:buster
 
@@ -45,7 +44,7 @@ RUN addgroup --gid 1100 euler \
   && chown euler:euler -R /app
 
 # Cleaning image.
-RUN  apt-get clean  \
+RUN apt-get clean  \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& apt-get autoremove -y
 	

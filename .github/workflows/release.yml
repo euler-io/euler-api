@@ -32,12 +32,14 @@ jobs:
           nexus_username: ${{ secrets.nexus_username }}
           nexus_password: ${{ secrets.nexus_password }}
 
-      - name: Build and push Docker images for opendistro-http-api
-        uses: docker/build-push-action@v1
+      - name: Build and push Docker images for eulerio/euler-api-opendistro
+        uses: docker/build-push-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: eulerio/euler-api
+          repository: eulerio/euler-api-opendistro
           path: opendistro-impl/docker
-          build_args: BRANCH=${{ env.git_branch }}
+          build_args:
+            - BRANCH=${{ env.git_branch }}
+            - COMPILE_OPTS=-Dmaven.test.skip.exec=true
           tags: opendistro-http-api-${{ env.project_version }}
