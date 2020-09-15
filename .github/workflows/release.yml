@@ -40,4 +40,4 @@ jobs:
           repository: eulerio/euler-api-opendistro
           path: opendistro-impl/docker
           build_args: BRANCH=${{ env.git_branch }},COMPILE_OPTS=-Dmaven.test.skip.exec=true
-          tags: ${{ env.project_version }}
+          tags: eulerio/euler-api-opendistro:${{ env.project_version }}
