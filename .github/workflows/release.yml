@@ -16,6 +16,9 @@ jobs:
       - name: Set project version enviroment variable
         run: echo "::set-env name=project_version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)"
 
+      - name: Set git branch
+        run: echo "::set-env name=git_branch::$(echo $GITHUB_REF | cut -d'/' -f 3)"
+
       - name: Install Java and Maven
         uses: actions/setup-java@v1
         with:
@@ -36,5 +39,5 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: eulerio/euler-api
           path: opendistro-impl/docker
-          build_args: BRANCH=${{ GITHUB_REF##*/ }}
+          build_args: BRANCH=${{ env.git_branch }}
           tags: opendistro-http-api-${{ env.project_version }}
