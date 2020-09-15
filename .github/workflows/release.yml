@@ -36,5 +36,5 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: eulerio/euler-api
           path: opendistro-impl/docker
-          build_args: PROJECT_VERSION=${{ env.project_version }}
+          build_args: BRANCH=${GITHUB_REF##*/}
           tags: opendistro-http-api-${{ env.project_version }}
