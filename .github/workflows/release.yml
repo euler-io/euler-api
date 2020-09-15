@@ -39,7 +39,5 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: eulerio/euler-api-opendistro
           path: opendistro-impl/docker
-          build_args:
-            - BRANCH=${{ env.git_branch }}
-            - COMPILE_OPTS=-Dmaven.test.skip.exec=true
+          build_args: BRANCH=${{ env.git_branch }} COMPILE_OPTS=-Dmaven.test.skip.exec=true
           tags: opendistro-http-api-${{ env.project_version }}
