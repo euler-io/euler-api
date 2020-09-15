@@ -40,6 +40,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.github.euler.api.ESEulerHTTPAPI</mainClass>
+                    <finalName>opendistro-http-api</finalName>
                 </configuration>
                 <executions>
                     <execution>
