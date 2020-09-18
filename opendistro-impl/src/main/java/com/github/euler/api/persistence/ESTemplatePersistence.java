@@ -67,7 +67,12 @@ public class ESTemplatePersistence extends AbstractTemplatePersistence implement
     public TemplateDetails get(String name) throws IOException {
         GetRequest req = new GetRequest(getTemplateIndex(), name);
         GetResponse resp = client.get(req, RequestOptions.DEFAULT);
-        return readValue(resp.getSourceAsBytes());
+        byte[] source = resp.getSourceAsBytes();
+        if (source != null) {
+            return readValue(source);
+        } else {
+            return null;
+        }
     }
 
     private byte[] toBytes(TemplateDetails template) {

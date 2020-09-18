@@ -30,7 +30,7 @@ public class TemplateApiDelegateImpl implements TemplateApiDelegate {
     private final ActorSystem<APICommand> system;
     private final JobDetailsPersistence jobDetailsPersistence;
     private final TemplatePersistence persistence;
-    private final TemplateNameValidator validator;
+    private final TemplateValidator validator;
     private final JobGenerator jobGenerator;
 
     @Autowired
@@ -39,13 +39,13 @@ public class TemplateApiDelegateImpl implements TemplateApiDelegate {
         this.system = system;
         this.jobDetailsPersistence = jobDetailsPersistence;
         this.persistence = persistence;
-        validator = new TemplateNameValidator();
+        validator = new TemplateValidator();
         jobGenerator = new JobGenerator();
     }
 
     @Override
     public ResponseEntity<Template> createNewTemplate(TemplateConfig body) {
-        if (validator.isValid(body.getName()) && validator.isConfigValid(body.getConfig())) {
+        if (validator.isValid(body)) {
             try {
                 TemplateDetails details = new TemplateDetails();
                 Config config = ConfigFactory.parseString(body.getConfig());
