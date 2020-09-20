@@ -38,6 +38,10 @@
         </dependency>
         <dependency>
             <groupId>com.github.euler-io</groupId>
+            <artifactId>euler-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.euler-io</groupId>
             <artifactId>euler-config</artifactId>
         </dependency>
         <dependency>
