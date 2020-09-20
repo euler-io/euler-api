@@ -9,17 +9,17 @@ public class TemplateNameValidatorTest {
 
     @Test
     public void testNameWithInvalidChars() {
-        TemplateNameValidator validator = new TemplateNameValidator();
-        assertFalse(validator.isValid("some name"));
-        assertFalse(validator.isValid("someName"));
+        TemplateValidator validator = new TemplateValidator();
+        assertFalse(validator.isNameValid("some name"));
+        assertFalse(validator.isNameValid("someName"));
     }
 
     @Test
     public void testValidNames() {
-        TemplateNameValidator validator = new TemplateNameValidator();
-        assertTrue(validator.isValid("some-name"));
-        assertTrue(validator.isValid("some_name"));
-        assertTrue(validator.isValid("some_name1"));
+        TemplateValidator validator = new TemplateValidator();
+        assertTrue(validator.isNameValid("some-name"));
+        assertTrue(validator.isNameValid("some_name"));
+        assertTrue(validator.isNameValid("some_name1"));
     }
 
 }
