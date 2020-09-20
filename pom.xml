@@ -4,7 +4,7 @@
     <artifactId>euler-api</artifactId>
     <packaging>pom</packaging>
     <name>Euler API - Parent</name>
-    <version>0.4.4-SNAPSHOT</version>
+    <version>0.4.4</version>
     <url>https://github.com/euler-io/euler-api</url>
     <description>Euler - Http API.</description>
 
