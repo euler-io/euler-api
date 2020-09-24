@@ -141,7 +141,7 @@ public class OpenDistroConfiguration {
                     .distinct()
                     .map(h -> toHttpHost(h)).toArray(HttpHost[]::new);
         } catch (ConfigException.WrongType e) {
-            return new HttpHost[] { toHttpHost(config.getString("elasticsearch.hosts")) };
+            return new HttpHost[] { toHttpHost(config.getString("euler.http-api.elasticsearch.hosts")) };
         }
     }
 
