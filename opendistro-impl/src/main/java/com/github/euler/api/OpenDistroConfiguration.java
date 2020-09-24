@@ -7,6 +7,11 @@ import java.security.GeneralSecurityException;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -20,7 +25,6 @@ import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,12 +64,27 @@ public class OpenDistroConfiguration {
 
             @Override
             public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-                if (ca != null) {
+                if (ca != null && !isAllowInsecure()) {
                     try {
                         SSLContextBuilder custom = SSLContexts.custom();
                         custom.loadTrustMaterial(TrustStoreLoader.loadTrustStore(ca), new TrustSelfSignedStrategy());
                         httpClientBuilder = httpClientBuilder.setSSLContext(custom.build());
                     } catch (GeneralSecurityException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                if (isAllowInsecure()) {
+                    try {
+                        SSLContext sc = SSLContext.getInstance("TLS");
+                        sc.init(null, new TrustManager[] { new TrustAllX509TrustManager() }, new java.security.SecureRandom());
+                        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+                        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                            public boolean verify(String string, SSLSession ssls) {
+                                return true;
+                            }
+                        });
+                        httpClientBuilder = httpClientBuilder.setSSLContext(sc);
+                    } catch (GeneralSecurityException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -135,12 +154,21 @@ public class OpenDistroConfiguration {
         }
     }
 
-    String getCertificateAuthorities() {
+    private String getCertificateAuthorities() {
         try {
             Config config = configuration.getConfig();
             return config.getString("euler.http-api.elasticsearch.ssl.certificate-authorities");
         } catch (ConfigException.Missing e) {
             return null;
+        }
+    }
+
+    private boolean isAllowInsecure() {
+        try {
+            Config config = configuration.getConfig();
+            return config.getBoolean("euler.http-api.elasticsearch.ssl.allow-insecure");
+        } catch (ConfigException.Missing e) {
+            return true;
         }
     }
 

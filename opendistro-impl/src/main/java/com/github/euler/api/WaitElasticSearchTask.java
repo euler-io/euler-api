@@ -32,7 +32,7 @@ public class WaitElasticSearchTask implements Callable<MainResponse> {
                 LOGGER.info("Connected to Elasticsearch.");
                 return resp;
             } catch (IOException | ElasticsearchException e) {
-                LOGGER.info("Could not connect to Elasticsearch. Retry will occur in {}ms.", interval);
+                LOGGER.warn("Could not connect to Elasticsearch ({}). Retry will occur in {}ms.", e.getMessage(), interval);
                 attempts++;
                 Thread.sleep(interval);
             }
