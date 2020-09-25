@@ -57,6 +57,21 @@
                 <artifactId>euler-config</artifactId>
                 <version>${euler.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.euler-io</groupId>
+                <artifactId>euler-file</artifactId>
+                <version>${euler.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.euler-io</groupId>
+                <artifactId>euler-tika</artifactId>
+                <version>${euler.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.euler-io</groupId>
+                <artifactId>euler-elasticsearch</artifactId>
+                <version>${euler.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

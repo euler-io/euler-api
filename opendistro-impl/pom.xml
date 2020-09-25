@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.euler-io</groupId>
@@ -12,11 +14,29 @@
         <artifactId>euler-api</artifactId>
         <version>0.4.6-SNAPSHOT</version>
     </parent>
+    <properties>
+        <euler.libraries>provided</euler.libraries>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.github.euler-io</groupId>
             <artifactId>http-api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.euler-io</groupId>
+            <artifactId>euler-file</artifactId>
+            <scope>${euler.libraries}</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.euler-io</groupId>
+            <artifactId>euler-tika</artifactId>
+            <scope>${euler.libraries}</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.euler-io</groupId>
+            <artifactId>euler-elasticsearch</artifactId>
+            <scope>${euler.libraries}</scope>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>

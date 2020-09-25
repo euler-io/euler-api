@@ -17,7 +17,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 @Configuration
 public class SwaggerAuthConfig extends SwaggerDocumentationConfig {
 
-    public static final String DEFAULT_INCLUDE_PATTERN = "\\/(jobs|job|statistics|extensions)\\/?.*";
+    public static final String DEFAULT_INCLUDE_PATTERN = "\\/(jobs|job|statistics|extensions|template|templates)\\/?.*";
 
     @Bean
     @Override
