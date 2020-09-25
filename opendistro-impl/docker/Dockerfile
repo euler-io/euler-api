@@ -28,7 +28,6 @@ RUN mkdir /src \
 FROM debian:buster
 
 ENV JAVA_OPTS=""
-ENV EULER_OPTS=""
 
 # Installing dependencies
 RUN apt-get update \
@@ -52,4 +51,4 @@ RUN apt-get clean  \
 USER euler
 WORKDIR /app
 
-CMD java -jar ${JAVA_OPTS} /app/opendistro-http-api.jar -classpath /app/lib com.github.euler.api.ESEulerHTTPAPI ${EULER_OPTS}
+CMD java -jar /app/opendistro-http-api.jar ${JAVA_OPTS} -classpath /app/lib com.github.euler.api.ESEulerHTTPAPI
