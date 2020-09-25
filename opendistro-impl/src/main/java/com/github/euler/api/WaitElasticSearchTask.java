@@ -26,6 +26,7 @@ public class WaitElasticSearchTask implements Callable<MainResponse> {
     @Override
     public MainResponse call() throws Exception {
         int attempts = 0;
+        Exception lastEx = null;
         while (attempts < maxRetries) {
             try {
                 MainResponse resp = client.info(RequestOptions.DEFAULT);
@@ -35,9 +36,10 @@ public class WaitElasticSearchTask implements Callable<MainResponse> {
                 LOGGER.warn("Could not connect to Elasticsearch ({}). Retry will occur in {}ms.", e.getMessage(), interval);
                 attempts++;
                 Thread.sleep(interval);
+                lastEx = e;
             }
         }
-        throw new IllegalStateException("Could not connect to Elasticsearch.");
+        throw new IllegalStateException("Could not connect to Elasticsearch.", lastEx);
     }
 
 }
