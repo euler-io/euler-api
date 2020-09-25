@@ -4,7 +4,7 @@
     <artifactId>euler-api</artifactId>
     <packaging>pom</packaging>
     <name>Euler API - Parent</name>
-    <version>0.4.5-SNAPSHOT</version>
+    <version>0.4.6-SNAPSHOT</version>
     <url>https://github.com/euler-io/euler-api</url>
     <description>Euler - Http API.</description>
 
@@ -27,7 +27,7 @@
         <url>https://github.com/euler-io/euler-api</url>
         <connection>scm:git:ssh://git@github.com/euler-io/euler-api.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/euler-io/euler-api.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>0.4.4</tag>
     </scm>
 
     <properties>
@@ -126,8 +126,28 @@
 
     <repositories>
         <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>oss-sonatype-releases</id>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>oss-sonatype-public-releases</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
