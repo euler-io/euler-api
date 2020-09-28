@@ -25,14 +25,17 @@ public class AkkaConfiguration {
     private final APIConfiguration configuration;
     private final JobPersistence persistence;
     private final JobDetailsPersistence detailsPersistence;
+    private final EulerConfiguration eulerConfiguration;
     private final ObjectMapper mapper;
 
     @Autowired
-    public AkkaConfiguration(APIConfiguration configuration, JobPersistence persistence, JobDetailsPersistence detailsPersistence, ObjectMapper mapper) {
+    public AkkaConfiguration(APIConfiguration configuration, JobPersistence persistence, JobDetailsPersistence detailsPersistence, EulerConfiguration eulerConfiguration,
+            ObjectMapper mapper) {
         super();
         this.configuration = configuration;
         this.persistence = persistence;
         this.detailsPersistence = detailsPersistence;
+        this.eulerConfiguration = eulerConfiguration;
         this.mapper = mapper;
     }
 
@@ -49,7 +52,7 @@ public class AkkaConfiguration {
     private void start() {
         String name = configuration.getConfig().getString("euler.system-name");
         int maxJobs = configuration.getConfig().getInt("euler.queue.max-concurrent-jobs");
-        EulerConfigConverter converter = new EulerConfigConverter();
+        EulerConfigConverter converter = eulerConfiguration.getEulerConfigConverter();
         system = ActorSystem.create(APIQueue.create(maxJobs, persistence, detailsPersistence, mapper, converter), name, configuration.getConfig());
     }
 

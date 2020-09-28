@@ -7,6 +7,7 @@ services:
   working_dir: /src
   volumes:
    - .:/src
+   - ~:/user-home
    - ~/.m2/repository:/mvn/.m2/repository
   user: ${CURRENT_UID}:${CURRENT_GID}
   environment:
