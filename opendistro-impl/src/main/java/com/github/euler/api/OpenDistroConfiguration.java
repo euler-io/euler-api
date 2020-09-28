@@ -51,9 +51,13 @@ public class OpenDistroConfiguration {
     }
 
     private void start() {
+        client = startClient();
+    }
+
+    public OpenDistroClient startClient() {
         String username = getUsername();
         String password = getPassword();
-        client = startClient(username, password);
+        return startClient(username, password);
     }
 
     public OpenDistroClient startClient(String username, String password) {
