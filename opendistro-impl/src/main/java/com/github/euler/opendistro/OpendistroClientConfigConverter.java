@@ -18,7 +18,7 @@ public class OpendistroClientConfigConverter implements TypeConfigConverter<Rest
 
     @Override
     public String configType() {
-        return "opendistro-provided";
+        return "provided";
     }
 
     @Override
