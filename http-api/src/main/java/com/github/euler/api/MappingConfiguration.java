@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.github.euler.web.HoconMessageConverter;
 import com.monitorjbl.json.JsonViewModule;
 
 @Configuration
@@ -21,5 +22,10 @@ public class MappingConfiguration {
         mapper.registerModule(module);
         mapper.registerModule(new JsonViewModule());
         return mapper;
+    }
+
+    @Bean
+    public HoconMessageConverter hoconMessageConverter() {
+        return new HoconMessageConverter();
     }
 }
