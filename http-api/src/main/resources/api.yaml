@@ -439,7 +439,7 @@ paths:
         description: The JSON describing the template. If a template with this name already exists, it will be replaced.
         required: true
         content:
-          application/hocon:
+          application/json:
             schema:
               $ref: '#/components/schemas/TemplateConfig'
       responses:
