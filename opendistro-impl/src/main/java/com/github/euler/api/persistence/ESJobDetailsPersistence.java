@@ -1,9 +1,8 @@
 package com.github.euler.api.persistence;
 
-import static com.monitorjbl.json.Match.match;
-
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -12,36 +11,32 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.github.euler.api.APIConfiguration;
+import com.github.euler.api.OffsetDateTimeIO;
 import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
 import com.github.euler.opendistro.OpenDistroClient;
-import com.monitorjbl.json.JsonView;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
 
 @Service
 @DependsOn("com.github.euler.api.WaitElasticsearchBean")
 public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> implements JobDetailsPersistence {
 
-    private final ObjectMapper objectMapper;
-    private final ObjectReader reader;
+    private final OffsetDateTimeIO.Serializer datetimeSerializer = new OffsetDateTimeIO.Serializer();
+    private final OffsetDateTimeIO.Deserializer datetimeDeserializer = new OffsetDateTimeIO.Deserializer();
 
     @Autowired
-    public ESJobDetailsPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
+    public ESJobDetailsPersistence(OpenDistroClient client, APIConfiguration configuration) {
         super(client, configuration);
-        this.objectMapper = objectMapper;
-        this.reader = this.objectMapper.readerFor(JobDetails.class);
     }
 
     @PostConstruct
@@ -55,26 +50,59 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
 
     @Override
     protected JobDetails readValue(byte[] sourceAsBytes) throws IOException {
-        return reader.readValue(sourceAsBytes);
+        Config config = ConfigFactory.parseString(new String(sourceAsBytes, "utf-8"));
+        return bind(config);
+    }
+
+    protected JobDetails bind(Config config) {
+        JobDetails jobDetails = new JobDetails();
+        if (config.hasPath("creation-date")) {
+            jobDetails.setCreationDate(this.datetimeDeserializer.deserialize(config.getString("creation-date")));
+        }
+        if (config.hasPath("enqueued-date")) {
+            jobDetails.setEnqueuedDate(this.datetimeDeserializer.deserialize(config.getString("enqueued-date")));
+        }
+        if (config.hasPath("start-date")) {
+            jobDetails.setStartDate(this.datetimeDeserializer.deserialize(config.getString("start-date")));
+        }
+        if (config.hasPath("end-date")) {
+            jobDetails.setEndDate(this.datetimeDeserializer.deserialize(config.getString("end-date")));
+        }
+        jobDetails.setSeed(config.getString("seed"));
+        jobDetails.setStatus(JobStatus.fromValue(config.getString("status")));
+        jobDetails.setConfig(config.getConfig("config").root().unwrapped());
+        return jobDetails;
     }
 
     @Override
     public JobDetails create(JobDetails job) throws IOException {
         IndexRequest req = new IndexRequest(getJobIndex());
         req.id(job.getId());
-        req.source(toBytes(job), XContentType.JSON);
+        req.source(buildSource(job));
         req.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
         IndexResponse resp = client.index(req, RequestOptions.DEFAULT);
         job.setId(resp.getId());
         return job;
     }
 
-    private byte[] toBytes(JobDetails job) {
-        try {
-            return this.objectMapper.writeValueAsBytes(JsonView.with(job).onClass(JobDetails.class, match().exclude("id")));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+    private Map<String, ?> buildSource(JobDetails job) {
+        Map<String, Object> map = new HashMap<>(Map.of(
+                "seed", job.getSeed(),
+                "status", job.getStatus().name(),
+                "config", job.getConfig()));
+        if (job.getCreationDate() != null) {
+            map.put("creation-date", datetimeSerializer.serialize(job.getCreationDate()));
         }
+        if (job.getEnqueuedDate() != null) {
+            map.put("enqueued-date", datetimeSerializer.serialize(job.getEnqueuedDate()));
+        }
+        if (job.getStartDate() != null) {
+            map.put("start-date", datetimeSerializer.serialize(job.getStartDate()));
+        }
+        if (job.getEndDate() != null) {
+            map.put("end-date", datetimeSerializer.serialize(job.getEndDate()));
+        }
+        return map;
     }
 
     @Override
@@ -88,10 +116,10 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
     }
 
     protected JobDetails convert(SearchHit h) {
-        Map<String, Object> source = h.getSourceAsMap();
-        JobDetails details = objectMapper.convertValue(source, JobDetails.class);
-        details.setId(h.getId());
-        return details;
+        Config config = ConfigFactory.parseString(h.getSourceAsString());
+        JobDetails jobDetails = bind(config);
+        jobDetails.setId(h.getId());
+        return jobDetails;
     }
 
 }

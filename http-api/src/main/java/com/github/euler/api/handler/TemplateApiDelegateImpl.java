@@ -18,9 +18,6 @@ import com.github.euler.api.model.TemplateDetails;
 import com.github.euler.api.model.TemplateParams;
 import com.github.euler.api.persistence.JobDetailsPersistence;
 import com.github.euler.api.persistence.TemplatePersistence;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigRenderOptions;
 
 import akka.actor.typed.ActorSystem;
 
@@ -48,8 +45,7 @@ public class TemplateApiDelegateImpl implements TemplateApiDelegate {
         if (validator.isValid(body)) {
             try {
                 TemplateDetails details = new TemplateDetails();
-                Config config = ConfigFactory.parseString(body.getConfig());
-                details.setConfig(config.root().render(ConfigRenderOptions.concise()));
+                details.setConfig(body.getConfig());
                 details.setName(body.getName());
                 Template template = TemplateUtils.fromDetails(persistence.create(details));
                 return new ResponseEntity<Template>(template, HttpStatus.OK);

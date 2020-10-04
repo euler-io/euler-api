@@ -31,7 +31,7 @@ public class APIQueueTest extends AkkaTest {
     public void testEnqueueAndRunJob() throws Exception {
         int maxJobs = 1;
         String jobId = "0";
-        String config = "{\"source\": \"empty\", \"tasks\": []}";
+        String config = "{\"config\": {\"source\": \"empty\", \"tasks\": []}}";
 
         TestProbe<APICommand> probe = testKit.createTestProbe();
 
@@ -73,7 +73,7 @@ public class APIQueueTest extends AkkaTest {
         int maxJobs = 1;
         String jobId1 = "0";
         String jobId2 = "1";
-        String config = "{\"source\": \"empty\", \"tasks\": []}";
+        String config = "{\"config\": {\"source\": \"empty\", \"tasks\": []}}";
 
         TestProbe<APICommand> probe = testKit.createTestProbe();
 
@@ -306,7 +306,7 @@ public class APIQueueTest extends AkkaTest {
     @Test
     public void testStartQueue() throws Exception {
         String jobId = "0";
-        String config = "{\"source\": \"empty\", \"tasks\": []}";
+        String config = "{\"config\": {\"source\": \"empty\", \"tasks\": []}}";
 
         // mocking
         JobPersistence persistence = mock(JobPersistence.class);

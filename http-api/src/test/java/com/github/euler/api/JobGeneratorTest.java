@@ -28,7 +28,7 @@ public class JobGeneratorTest {
         Config paramsConfig = ConfigFactory.parseString(paramsRaw);
 
         TemplateDetails template = new TemplateDetails();
-        template.setConfig(templateConfig.root().render(ConfigRenderOptions.concise()));
+        template.setConfig(templateConfig);
 
         TemplateParams params = new TemplateParams();
         params.setParams(toObject(paramsConfig));

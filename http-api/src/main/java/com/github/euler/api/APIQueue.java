@@ -14,7 +14,9 @@ import com.github.euler.api.persistence.JobPersistence;
 import com.github.euler.configuration.EulerConfigConverter;
 import com.github.euler.core.JobCommand;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValue;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -143,9 +145,19 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     }
 
     private ActorRef<JobCommand> spawn(String jobId, Config config) {
-        Behavior<JobCommand> behavior = converter.create(config, (s, p) -> APIJobExecution.create(s, p));
+        Behavior<JobCommand> behavior = create(config);
         String name = getChildName(jobId);
         return getContext().spawn(behavior, name);
+    }
+
+    private Behavior<JobCommand> create(Config config) {
+        ConfigValue value;
+        try {
+            value = config.getList("config");
+        } catch (ConfigException.WrongType e) {
+            value = config.getValue("config");
+        }
+        return converter.create(value, (s, p) -> APIJobExecution.create(s, p));
     }
 
     protected String getChildName(String jobId) {

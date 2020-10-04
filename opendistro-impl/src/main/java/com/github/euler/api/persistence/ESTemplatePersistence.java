@@ -1,6 +1,7 @@
 package com.github.euler.api.persistence;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -9,34 +10,24 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.euler.api.APIConfiguration;
 import com.github.euler.api.model.TemplateDetails;
 import com.github.euler.opendistro.OpenDistroClient;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
 
 @Service
 @DependsOn("com.github.euler.api.WaitElasticsearchBean")
 public class ESTemplatePersistence extends AbstractTemplatePersistence implements TemplatePersistence {
 
-    private final ObjectMapper objectMapper;
-    private final ObjectWriter writer;
-    private final ObjectReader reader;
-
     @Autowired
-    public ESTemplatePersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
+    public ESTemplatePersistence(OpenDistroClient client, APIConfiguration configuration) {
         super(client, configuration);
-        this.objectMapper = objectMapper;
-        writer = this.objectMapper.writerFor(TemplateDetails.class);
-        reader = this.objectMapper.readerFor(TemplateDetails.class);
     }
 
     @PostConstruct
@@ -50,9 +41,11 @@ public class ESTemplatePersistence extends AbstractTemplatePersistence implement
 
     @Override
     public TemplateDetails create(TemplateDetails template) throws IOException {
+        Config config = (Config) template.getConfig();
         IndexRequest req = new IndexRequest(getTemplateIndex());
         req.id(template.getName());
-        req.source(toBytes(template), XContentType.JSON);
+        req.source(Map.of("name", template.getName(),
+                "config", config.root().render(ConfigRenderOptions.concise())));
         client.index(req, RequestOptions.DEFAULT);
         return template;
     }
@@ -67,7 +60,7 @@ public class ESTemplatePersistence extends AbstractTemplatePersistence implement
     public TemplateDetails get(String name) throws IOException {
         GetRequest req = new GetRequest(getTemplateIndex(), name);
         GetResponse resp = client.get(req, RequestOptions.DEFAULT);
-        byte[] source = resp.getSourceAsBytes();
+        Map<String, Object> source = resp.getSource();
         if (source != null) {
             return readValue(source);
         } else {
@@ -75,16 +68,16 @@ public class ESTemplatePersistence extends AbstractTemplatePersistence implement
         }
     }
 
-    private byte[] toBytes(TemplateDetails template) {
-        try {
-            return writer.writeValueAsBytes(template);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private TemplateDetails readValue(Map<String, Object> source) {
+        TemplateDetails templateDetails = new TemplateDetails();
 
-    protected TemplateDetails readValue(byte[] sourceAsBytes) throws IOException {
-        return reader.readValue(sourceAsBytes);
+        templateDetails.setName((String) source.get("name"));
+
+        String configStr = (String) source.get("config");
+        Config config = ConfigFactory.parseString(configStr);
+        templateDetails.setConfig(config);
+
+        return templateDetails;
     }
 
 }
