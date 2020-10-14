@@ -14,7 +14,6 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigList;
 import com.typesafe.config.ConfigObject;
-import com.typesafe.config.ConfigRenderOptions;
 import com.typesafe.config.ConfigValue;
 
 @Configuration
@@ -48,9 +47,8 @@ public class TemplatesConfig {
         String name = config.getString("name");
         TemplateDetails details = templatePersistence.get(name);
         if (details == null) {
-            Config templateConfig = config.getConfig("config");
             details = new TemplateDetails();
-            details.setConfig(templateConfig.root().render(ConfigRenderOptions.concise()));
+            details.setConfig(config.withOnlyPath("config"));
             details.setName(name);
             templatePersistence.create(details);
         }
