@@ -15,8 +15,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
 @EnableSwagger2
-@ComponentScan(basePackages = { "com.github.euler.api", "com.github.euler.api.handler", "io.swagger.configuration" }, excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SwaggerDocumentationConfig.class) })
+@ComponentScan(basePackages = {"com.github.euler.api", "com.github.euler.api.handler", "io.swagger.configuration"}, excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SwaggerDocumentationConfig.class)})
 public class EulerHTTPAPI extends Swagger2SpringBoot {
 
     private final Config config;
@@ -40,11 +40,12 @@ public class EulerHTTPAPI extends Swagger2SpringBoot {
 
     protected void initialize(SpringApplication app) {
         app.addInitializers(new ConfigurationInitializer(config));
-//        app.addInitializers(new AuthInitializer());
     }
 
     protected SpringApplication createApp() {
-        return new SpringApplication(getClass());
+        SpringApplication app = new SpringApplication(getClass());
+        app.setBanner(new EulerBanner());
+        return app;
     }
 
     public void stop() {
