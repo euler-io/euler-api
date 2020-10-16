@@ -7,7 +7,6 @@ import java.io.PrintStream;
 import java.util.Iterator;
 
 import org.springframework.boot.Banner;
-import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.ansi.AnsiColor;
 import org.springframework.boot.ansi.AnsiOutput;
 import org.springframework.boot.ansi.AnsiStyle;
@@ -34,13 +33,13 @@ public class EulerBanner implements Banner {
         while (padding.length() < (line.length() - version.length() - EULER.length())) {
             padding.append(" ");
         }
-        out.println(AnsiOutput.toString(AnsiColor.GREEN, EULER, AnsiColor.DEFAULT, padding.toString(),
-                AnsiStyle.FAINT, version));
+        out.println(AnsiOutput.toString(AnsiColor.BLUE, EULER, AnsiColor.DEFAULT, padding.toString(),
+                AnsiStyle.BOLD, version));
         out.println();
     }
 
     private String getVersion() {
-        String implementationVersion = SpringBootVersion.class.getPackage().getImplementationVersion();
+        String implementationVersion = EulerBanner.class.getPackage().getImplementationVersion();
         if (implementationVersion != null) {
             return implementationVersion;
         } else {
