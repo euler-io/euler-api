@@ -32,7 +32,7 @@ ENV JAVA_OPTS=""
 # Installing dependencies
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
-		openjdk-11-jdk-headless
+		openjdk-11-jre-headless
 
 # Installing app
 RUN mkdir -p /app/lib
