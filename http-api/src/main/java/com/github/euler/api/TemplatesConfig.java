@@ -47,7 +47,7 @@ public class TemplatesConfig {
                 loadTemplate(((ConfigObject) templateConfig).toConfig());
             }
         } else {
-            LOGGER.info("Default templates not found.");
+            LOGGER.info("Default templates config not found.");
         }
     }
 
@@ -55,9 +55,9 @@ public class TemplatesConfig {
         String name = config.getString("name");
         TemplateDetails details = templatePersistence.get(name);
         if (details == null) {
-            LOGGER.info("Creating index {}.", name);
+            LOGGER.info("Creating template {}.", name);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Template {}", name);
+                LOGGER.debug("Template {}:", name);
                 LOGGER.debug("{}", config.root().render(ConfigRenderOptions.defaults()));
             }
             details = new TemplateDetails();
