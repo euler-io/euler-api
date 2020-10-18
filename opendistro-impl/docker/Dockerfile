@@ -51,4 +51,4 @@ RUN apt-get clean  \
 USER euler
 WORKDIR /app
 
-CMD java -jar /app/opendistro-http-api.jar -Dloader.path=/app/lib ${JAVA_OPTS} com.github.euler.api.ESEulerHTTPAPI
+CMD java -Dloader.path=/app/lib ${JAVA_OPTS} -jar /app/opendistro-http-api.jar com.github.euler.api.ESEulerHTTPAPI
