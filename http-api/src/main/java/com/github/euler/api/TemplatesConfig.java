@@ -38,16 +38,14 @@ public class TemplatesConfig {
 
     @PostConstruct
     protected void loadDefaultTemplates() throws IOException {
-        if (config.getConfig().hasPath(EULER_HTTP_API_TEMPLATES_URL)) {
+        if (config.getConfig().getBoolean("euler.http-api.auto-initialize-templates")) {
             String templatesUrl = config.getConfig().getString(EULER_HTTP_API_TEMPLATES_URL);
-            LOGGER.info("Loading default templates from {}.", templatesUrl);
+            LOGGER.info("Loading default templates from '{}'.", templatesUrl);
             Config templatesConfig = ConfigFactory.parseURL(new URL(templatesUrl));
             ConfigList templatesList = templatesConfig.getList("templates");
             for (ConfigValue templateConfig : templatesList) {
                 loadTemplate(((ConfigObject) templateConfig).toConfig());
             }
-        } else {
-            LOGGER.info("Default templates config not found.");
         }
     }
 
@@ -55,9 +53,9 @@ public class TemplatesConfig {
         String name = config.getString("name");
         TemplateDetails details = templatePersistence.get(name);
         if (details == null) {
-            LOGGER.info("Creating template {}.", name);
+            LOGGER.info("Creating template '{}'.", name);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Template {}:", name);
+                LOGGER.debug("Template '{}':", name);
                 LOGGER.debug("{}", config.root().render(ConfigRenderOptions.defaults()));
             }
             details = new TemplateDetails();
