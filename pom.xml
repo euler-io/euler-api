@@ -27,7 +27,7 @@
         <url>https://github.com/euler-io/euler-api</url>
         <connection>scm:git:ssh://git@github.com/euler-io/euler-api.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/euler-io/euler-api.git</developerConnection>
-        <tag>0.4.4</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
@@ -38,7 +38,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <downloadSources>true</downloadSources>
         <downloadJavadocs>true</downloadJavadocs>
-        <euler.version>0.5.1</euler.version>
+        <euler.version>0.5.2</euler.version>
         <docker.repository>eulerio/euler-api</docker.repository>
     </properties>
     <modules>
