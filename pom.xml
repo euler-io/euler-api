@@ -38,7 +38,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <downloadSources>true</downloadSources>
         <downloadJavadocs>true</downloadJavadocs>
-        <euler.version>0.5.2</euler.version>
+        <euler.version>0.6.0</euler.version>
         <docker.repository>eulerio/euler-api</docker.repository>
     </properties>
     <modules>

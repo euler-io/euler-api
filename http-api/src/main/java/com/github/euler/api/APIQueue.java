@@ -157,7 +157,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         } catch (ConfigException.WrongType e) {
             value = config.getValue("config");
         }
-        return converter.create(value, (s, p) -> APIJobExecution.create(s, p));
+        return converter.create(value, (s, p, h) -> APIJobExecution.create(s, p, h));
     }
 
     protected String getChildName(String jobId) {
