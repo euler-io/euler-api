@@ -4,7 +4,7 @@
     <artifactId>euler-api</artifactId>
     <packaging>pom</packaging>
     <name>Euler API - Parent</name>
-    <version>0.6.1</version>
+    <version>0.6.2-SNAPSHOT</version>
     <url>https://github.com/euler-io/euler-api</url>
     <description>Euler - Http API.</description>
 
@@ -27,7 +27,7 @@
         <url>https://github.com/euler-io/euler-api</url>
         <connection>scm:git:ssh://git@github.com/euler-io/euler-api.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/euler-io/euler-api.git</developerConnection>
-        <tag>0.6.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
