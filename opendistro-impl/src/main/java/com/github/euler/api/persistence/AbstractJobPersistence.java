@@ -1,12 +1,13 @@
 package com.github.euler.api.persistence;
 
+import static com.github.euler.api.security.SecurityUtils.buildOptions;
+
 import java.io.IOException;
 
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -47,12 +48,12 @@ public abstract class AbstractJobPersistence<J extends Job> extends ESPersistenc
         searchSourceBuilder.from(page * size);
         searchSourceBuilder.sort(sortBy.toString().toLowerCase().replace('_', '-'), SortOrder.fromString(sortDirection.toString()));
         req.source(searchSourceBuilder);
-        return client.search(req, RequestOptions.DEFAULT);
+        return client.search(req, buildOptions());
     }
 
     public J get(String id) throws IOException {
         GetRequest req = new GetRequest(getJobIndex(), id);
-        GetResponse response = client.get(req, RequestOptions.DEFAULT);
+        GetResponse response = client.get(req, buildOptions());
         if (response.isExists()) {
             J j = readValue(response.getSourceAsBytes());
             j.setId(response.getId());

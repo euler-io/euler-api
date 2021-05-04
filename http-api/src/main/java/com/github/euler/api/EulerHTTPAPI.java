@@ -11,10 +11,9 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import io.swagger.configuration.SwaggerDocumentationConfig;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
-@EnableSwagger2
+//@EnableSwagger2
 @ComponentScan(basePackages = {"com.github.euler.api", "com.github.euler.api.handler", "io.swagger.configuration"}, excludeFilters = {
         @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SwaggerDocumentationConfig.class)})
 public class EulerHTTPAPI extends Swagger2SpringBoot {

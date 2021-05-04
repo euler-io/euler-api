@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.euler-io</groupId>
     <artifactId>http-api</artifactId>
@@ -13,8 +15,8 @@
     </parent>
     <properties>
         <java.version>11</java.version>
-        <springfox-version>2.9.2</springfox-version>
-        <springboot-version>2.3.0.RELEASE</springboot-version>
+        <springfox-version>2.10.5</springfox-version>
+        <springboot-version>2.4.5</springboot-version>
         <beanvalidation-version>1.1.0.Final</beanvalidation-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <akka.version>2.6.5</akka.version>
@@ -28,7 +30,7 @@
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>3.10.3</version>
+            <version>3.15.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -125,6 +127,12 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-slf4j_2.13</artifactId>
             <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

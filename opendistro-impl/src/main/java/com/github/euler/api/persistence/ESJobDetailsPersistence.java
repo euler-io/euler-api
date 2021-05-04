@@ -1,11 +1,14 @@
 package com.github.euler.api.persistence;
 
+import static com.github.euler.api.security.SecurityUtils.buildOptions;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.euler.api.APIConfiguration;
 import com.github.euler.api.OffsetDateTimeIO;
+import com.github.euler.api.OpenDistroConfiguration;
 import com.github.euler.api.model.JobDetails;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
@@ -31,20 +35,38 @@ import com.typesafe.config.ConfigRenderOptions;
 @DependsOn("com.github.euler.api.WaitElasticsearchBean")
 public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> implements JobDetailsPersistence {
 
+    private final OpenDistroClient initClient;
+
     private final OffsetDateTimeIO.Serializer datetimeSerializer = new OffsetDateTimeIO.Serializer();
     private final OffsetDateTimeIO.Deserializer datetimeDeserializer = new OffsetDateTimeIO.Deserializer();
 
     @Autowired
-    public ESJobDetailsPersistence(OpenDistroClient client, APIConfiguration configuration) {
-        super(client, configuration);
+    public ESJobDetailsPersistence(OpenDistroConfiguration openDistroConfiguration, APIConfiguration configuration) {
+        super(openDistroConfiguration.startClient(null, null), configuration);
+        this.initClient = openDistroConfiguration.startClient();
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        if (client != null) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @PostConstruct
     protected void initializeJobIndex() throws IOException {
-        boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
-        if (autoInitialize) {
-            String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.job-index.mappings").root().render(ConfigRenderOptions.concise());
-            initializeIndex(getJobIndex(), jsonMapping, RequestOptions.DEFAULT);
+        try {
+            boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
+            if (autoInitialize) {
+                String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.job-index.mappings").root().render(ConfigRenderOptions.concise());
+                initializeIndex(initClient, getJobIndex(), jsonMapping, RequestOptions.DEFAULT);
+            }
+        } finally {
+            initClient.close();
         }
     }
 
@@ -80,7 +102,7 @@ public class ESJobDetailsPersistence extends AbstractJobPersistence<JobDetails> 
         req.id(job.getId());
         req.source(buildSource(job));
         req.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-        IndexResponse resp = client.index(req, RequestOptions.DEFAULT);
+        IndexResponse resp = client.index(req, buildOptions());
         job.setId(resp.getId());
         return job;
     }

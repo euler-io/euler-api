@@ -1,9 +1,12 @@
 package com.github.euler.api.persistence;
 
+import static com.github.euler.api.security.SecurityUtils.buildOptions;
+
 import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetRequest;
@@ -15,6 +18,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import com.github.euler.api.APIConfiguration;
+import com.github.euler.api.OpenDistroConfiguration;
 import com.github.euler.api.model.TemplateDetails;
 import com.github.euler.opendistro.OpenDistroClient;
 import com.typesafe.config.Config;
@@ -25,17 +29,35 @@ import com.typesafe.config.ConfigRenderOptions;
 @DependsOn("com.github.euler.api.WaitElasticsearchBean")
 public class ESTemplatePersistence extends AbstractTemplatePersistence implements TemplatePersistence {
 
+    private final OpenDistroClient initClient;
+
     @Autowired
-    public ESTemplatePersistence(OpenDistroClient client, APIConfiguration configuration) {
-        super(client, configuration);
+    public ESTemplatePersistence(OpenDistroConfiguration openDistroConfiguration, APIConfiguration configuration) {
+        super(openDistroConfiguration.startClient(null, null), configuration);
+        this.initClient = openDistroConfiguration.startClient();
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        if (client != null) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @PostConstruct
     protected void initializeJobIndex() throws IOException {
-        boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
-        if (autoInitialize) {
-            String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.template-index.mappings").root().render(ConfigRenderOptions.concise());
-            initializeIndex(getTemplateIndex(), jsonMapping, RequestOptions.DEFAULT);
+        try {
+            boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
+            if (autoInitialize) {
+                String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.template-index.mappings").root().render(ConfigRenderOptions.concise());
+                initializeIndex(initClient, getTemplateIndex(), jsonMapping, RequestOptions.DEFAULT);
+            }
+        } finally {
+            initClient.close();
         }
     }
 
@@ -46,14 +68,14 @@ public class ESTemplatePersistence extends AbstractTemplatePersistence implement
         req.id(template.getName());
         req.source(Map.of("name", template.getName(),
                 "config", config.root().render(ConfigRenderOptions.concise())));
-        client.index(req, RequestOptions.DEFAULT);
+        client.index(req, buildOptions());
         return template;
     }
 
     @Override
     public void delete(String name) throws IOException {
         DeleteRequest req = new DeleteRequest(getTemplateIndex(), name);
-        client.delete(req, RequestOptions.DEFAULT);
+        client.delete(req, buildOptions());
     }
 
     @Override

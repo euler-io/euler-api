@@ -1,5 +1,7 @@
 package com.github.euler.api.persistence;
 
+import static com.github.euler.api.security.SecurityUtils.buildOptions;
+
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -8,11 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PreDestroy;
+
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,12 +25,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.github.euler.api.APIConfiguration;
 import com.github.euler.api.OffsetDateTimeIO;
+import com.github.euler.api.OpenDistroConfiguration;
 import com.github.euler.api.model.Job;
 import com.github.euler.api.model.JobList;
 import com.github.euler.api.model.JobStatus;
 import com.github.euler.api.model.SortBy;
 import com.github.euler.api.model.SortDirection;
-import com.github.euler.opendistro.OpenDistroClient;
 
 @Service
 public class ESJobPersistence extends AbstractJobPersistence<Job> implements JobPersistence {
@@ -37,11 +40,22 @@ public class ESJobPersistence extends AbstractJobPersistence<Job> implements Job
     private final OffsetDateTimeIO.Serializer serializer;
 
     @Autowired
-    public ESJobPersistence(OpenDistroClient client, APIConfiguration configuration, ObjectMapper objectMapper) {
-        super(client, configuration);
+    public ESJobPersistence(OpenDistroConfiguration openDistroConfiguration, APIConfiguration configuration, ObjectMapper objectMapper) {
+        super(openDistroConfiguration.startClient(null, null), configuration);
         this.objectMapper = objectMapper.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.reader = this.objectMapper.readerFor(Job.class);
         this.serializer = new OffsetDateTimeIO.Serializer();
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        if (client != null) {
+            try {
+                client.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Override
@@ -73,7 +87,7 @@ public class ESJobPersistence extends AbstractJobPersistence<Job> implements Job
     @Override
     public void delete(String id) throws IOException {
         DeleteRequest req = new DeleteRequest(getJobIndex(), id);
-        client.delete(req, RequestOptions.DEFAULT);
+        client.delete(req, buildOptions());
     }
 
     @Override
@@ -111,7 +125,7 @@ public class ESJobPersistence extends AbstractJobPersistence<Job> implements Job
         UpdateRequest req = new UpdateRequest(getJobIndex(), id)
                 .setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
         req.doc(source);
-        client.update(req, RequestOptions.DEFAULT);
+        client.update(req, buildOptions());
     }
 
 }

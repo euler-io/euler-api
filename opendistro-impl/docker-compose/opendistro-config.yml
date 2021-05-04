@@ -128,7 +128,7 @@ config:
           type: jwt
           challenge: false
           config:
-            signing_key: "dEFraGEwM2ZsUEZuV3hIUEpBdDBsMkh2M3JTWlJ2WW4yOFdYOFhhU2YxRUpXdXBFbDREU2dpcnVodDg4UkU5dlBSSlBiYXZIUDJMeW1mMEdGYlRiTGluOVA1NmdMZ3ROZ0RGQ0VXQ2FmczdOMG1NOGlLVWVqZG4xN01XWGg3ZXI4TldWOXBrcEhZUDc4bGtDbXZQRXB3Z0VqWXFqVmhCUEN6R0xIVUI0ZkdBdmxiemZIZHROMHRRUUhvdXNtODJJNzh1MUk5MHE="
+            signing_key: "Q0RzRXBaWUVlMGxUZHRPSUZrOWtaeXNYdnVCRUc4clZOZVdpYWRQeERXQkxnT2pOeUpSS1F1SWhUaFRjTXppSXllcHJmVm5GVVBFVG4xd3p5QUdTeVR5ckE0Mk1GN2RBV2dDYkZNTFRWNW5LSWZwZjJ6YU5XSFNuOGRVZ3oweGlqQ2ZXNVowY3ZtYTZrWklWVEE2V3FXSGlTZ0pGM1BjNW9BNXo5aG1Zbjc4MWlkVFg3blVqd1dxZzlzRmxRRTVnOXFtekxVa0Y"
             jwt_header: "Authorization"
             jwt_url_parameter: null
             roles_key: "roles" 
