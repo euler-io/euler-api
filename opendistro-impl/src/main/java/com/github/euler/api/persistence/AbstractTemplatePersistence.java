@@ -3,7 +3,7 @@ package com.github.euler.api.persistence;
 import com.github.euler.api.APIConfiguration;
 import com.github.euler.opendistro.OpenDistroClient;
 
-public class AbstractTemplatePersistence extends ESPersistence {
+public class AbstractTemplatePersistence extends OpendistroPersistence {
 
     protected final APIConfiguration configuration;
 
