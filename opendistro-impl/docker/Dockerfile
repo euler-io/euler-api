@@ -1,7 +1,5 @@
 FROM openjdk:14-jdk-buster as builder
 
-ARG SOURCE_BRANCH=master
-ARG COMPILE_OPTS=-Dmaven.test.skip
 ARG MAVEN_VERSION=3.6.3
 ARG MAVEN_SHA=c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0
 ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
@@ -19,10 +17,15 @@ RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		git
 
+ARG SOURCE_BRANCH=master
+ARG REPO_URL=https://github.com/euler-io/euler-api.git
+ARG CLONE_ARGS=--depth 1
+ARG COMPILE_OPTS=-Dmaven.test.skip
+
 # Compiling branch
 RUN mkdir /src \
 	&& cd /src \
-	&& git clone --branch $SOURCE_BRANCH --depth 1 https://github.com/euler-io/euler-api.git /src \
+	&& git clone --branch $SOURCE_BRANCH $CLONE_ARGS https://github.com/euler-io/euler-api.git /src \
 	&& mvn clean package $COMPILE_OPTS
 
 FROM debian:buster
