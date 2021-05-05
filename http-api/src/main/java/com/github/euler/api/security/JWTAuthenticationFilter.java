@@ -20,37 +20,46 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.auth0.jwt.JWTCreator.Builder;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.github.euler.api.model.Token;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private final SecurityService securityService;
-    private final AuthenticationManager authenticationManager;
+	private final SecurityService securityService;
+	private final AuthenticationManager authenticationManager;
 
-    public JWTAuthenticationFilter(SecurityService securityService, AuthenticationManager authenticationManager) {
-        super();
-        this.securityService = securityService;
-        this.authenticationManager = authenticationManager;
-    }
+	private final ObjectWriter writer;
 
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password, new ArrayList<>()));
-    }
+	public JWTAuthenticationFilter(SecurityService securityService, AuthenticationManager authenticationManager) {
+		super();
+		this.securityService = securityService;
+		this.authenticationManager = authenticationManager;
+		this.writer = new ObjectMapper().writerFor(Token.class);
+	}
 
-    @Override
-    protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse resp, FilterChain chain, Authentication auth) throws IOException, ServletException {
-        EulerAuthentication authToken = (EulerAuthentication) auth;
-        Builder builder = JWTUtils.buildFromResponse(authToken.getResponse());
-        Date expiration = securityService.calculateExpirationFromNow();
-        builder.withIssuedAt(new Date()).withExpiresAt(expiration);
+	@Override
+	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+			throws AuthenticationException {
+		String username = request.getParameter("username");
+		String password = request.getParameter("password");
+		return authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(username, password, new ArrayList<>()));
+	}
 
-        String token = builder.sign(Algorithm.HMAC512(securityService.getSecret()));
-        resp.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
-        resp.setContentType("text/plain");
-        resp.setCharacterEncoding("utf-8");
-        resp.getWriter().write(TOKEN_PREFIX + token);
-    }
+	@Override
+	protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse resp, FilterChain chain,
+			Authentication auth) throws IOException, ServletException {
+		EulerAuthentication authToken = (EulerAuthentication) auth;
+		Builder builder = JWTUtils.buildFromResponse(authToken.getResponse());
+		Date expiration = securityService.calculateExpirationFromNow();
+		builder.withIssuedAt(new Date()).withExpiresAt(expiration);
+
+		String token = builder.sign(Algorithm.HMAC512(securityService.getSecret()));
+		resp.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+		resp.setContentType("application/json");
+		resp.setCharacterEncoding("utf-8");
+		writer.writeValue(resp.getWriter(), new Token(token));
+	}
 
 }

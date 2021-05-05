@@ -39,7 +39,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     @PostConstruct
     public void postConstruct() throws IOException {
-        Config securityConfig = config.getConfig().getConfig("euler.security");
+        Config securityConfig = config.getConfig().getConfig("euler.http-api.security");
         if (securityConfig.hasPath("secret-file")) {
             try (InputStream input = new FileInputStream(securityConfig.getString("secret-file"))) {
                 String secretFileContent = IOUtils.toString(input, "utf-8");

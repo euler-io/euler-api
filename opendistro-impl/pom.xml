@@ -56,9 +56,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.3.4.RELEASE</version>
+                <version>2.4.5</version>
                 <configuration>
-                    <mainClass>com.github.euler.api.ESEulerHTTPAPI</mainClass>
+                    <mainClass>com.github.euler.api.OpenDistroEulerHttpApiApplication</mainClass>
                     <finalName>opendistro-http-api</finalName>
                     <layout>ZIP</layout>
                 </configuration>
@@ -73,7 +73,7 @@
         </plugins>
     </build>
     <profiles>
-        <profile>
+        <!--profile>
             <id>exec-linux</id>
             <activation>
                 <os>
@@ -106,7 +106,7 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
+        </profile-->
         <profile>
             <id>deploy</id>
             <build>
