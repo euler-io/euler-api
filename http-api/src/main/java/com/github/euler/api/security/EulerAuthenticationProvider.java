@@ -2,6 +2,8 @@ package com.github.euler.api.security;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -10,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
 public class EulerAuthenticationProvider implements AuthenticationProvider {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final AuthService authService;
 
@@ -28,15 +32,19 @@ public class EulerAuthenticationProvider implements AuthenticationProvider {
         }
         String password = credentials.toString();
 
+        AuthResponse resp = null;
         try {
-            AuthResponse resp = authService.authenticate(username, password);
-            if (resp != null) {
-                return new EulerAuthentication(resp);
-            } else {
-                throw new BadCredentialsException(username + " not authorized.");
-            }
+            LOGGER.info("Authentication attempt for '{}'.", username);
+            resp = authService.authenticate(username, password);
         } catch (IOException e) {
+            LOGGER.info("Authentication failed for '{}'.", username);
             throw new AuthenticationServiceException(e.getMessage(), e);
+        }
+        if (resp != null) {
+            return new EulerAuthentication(resp);
+        } else {
+            LOGGER.info("Authentication failed for '{}'.", username);
+            throw new BadCredentialsException(username + " not authorized.");
         }
 
     }

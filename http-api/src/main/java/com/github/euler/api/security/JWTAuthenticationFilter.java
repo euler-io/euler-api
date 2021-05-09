@@ -1,8 +1,5 @@
 package com.github.euler.api.security;
 
-import static com.github.euler.api.security.SecurityConstants.HEADER_STRING;
-import static com.github.euler.api.security.SecurityConstants.TOKEN_PREFIX;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,40 +23,39 @@ import com.github.euler.api.model.Token;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-	private final SecurityService securityService;
-	private final AuthenticationManager authenticationManager;
+    private final SecurityService securityService;
+    private final AuthenticationManager authenticationManager;
 
-	private final ObjectWriter writer;
+    private final ObjectWriter writer;
 
-	public JWTAuthenticationFilter(SecurityService securityService, AuthenticationManager authenticationManager) {
-		super();
-		this.securityService = securityService;
-		this.authenticationManager = authenticationManager;
-		this.writer = new ObjectMapper().writerFor(Token.class);
-	}
+    public JWTAuthenticationFilter(SecurityService securityService, AuthenticationManager authenticationManager) {
+        super();
+        this.securityService = securityService;
+        this.authenticationManager = authenticationManager;
+        this.writer = new ObjectMapper().writerFor(Token.class);
+    }
 
-	@Override
-	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-			throws AuthenticationException {
-		String username = request.getParameter("username");
-		String password = request.getParameter("password");
-		return authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(username, password, new ArrayList<>()));
-	}
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        return authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(username, password, new ArrayList<>()));
+    }
 
-	@Override
-	protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse resp, FilterChain chain,
-			Authentication auth) throws IOException, ServletException {
-		EulerAuthentication authToken = (EulerAuthentication) auth;
-		Builder builder = JWTUtils.buildFromResponse(authToken.getResponse());
-		Date expiration = securityService.calculateExpirationFromNow();
-		builder.withIssuedAt(new Date()).withExpiresAt(expiration);
+    @Override
+    protected void successfulAuthentication(HttpServletRequest req, HttpServletResponse resp, FilterChain chain,
+            Authentication auth) throws IOException, ServletException {
+        EulerAuthentication authToken = (EulerAuthentication) auth;
+        Builder builder = JWTUtils.buildFromResponse(authToken.getResponse());
+        Date expiration = securityService.calculateExpirationFromNow();
+        builder.withIssuedAt(new Date()).withExpiresAt(expiration);
 
-		String token = builder.sign(Algorithm.HMAC512(securityService.getSecret()));
-		resp.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
-		resp.setContentType("application/json");
-		resp.setCharacterEncoding("utf-8");
-		writer.writeValue(resp.getWriter(), new Token(token));
-	}
+        String token = builder.sign(Algorithm.HMAC512(securityService.getSecret()));
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("utf-8");
+        writer.writeValue(resp.getWriter(), new Token(token));
+    }
 
 }
