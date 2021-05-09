@@ -13,7 +13,7 @@ import com.github.euler.opendistro.OpenDistroClient;
 
 public abstract class BaseOpendistroPersistence {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseOpendistroPersistence.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     protected void initializeIndex(OpenDistroClient client, String index, String jsonMapping, RequestOptions opts) throws IOException {
         if (!isIndexCreated(client, index, opts)) {

@@ -25,12 +25,13 @@ ARG COMPILE_OPTS=-Dmaven.test.skip
 # Compiling branch
 RUN mkdir /src \
 	&& cd /src \
-	&& git clone --branch $SOURCE_BRANCH $CLONE_ARGS https://github.com/euler-io/euler-api.git /src \
+	&& git clone --branch $SOURCE_BRANCH $CLONE_ARGS $REPO_URL /src \
 	&& mvn clean package $COMPILE_OPTS
 
 FROM debian:buster
 
 ENV JAVA_OPTS=""
+ENV APP_ARGS=""
 
 # Installing dependencies
 RUN apt-get update \
@@ -54,4 +55,4 @@ RUN apt-get clean  \
 USER euler
 WORKDIR /app
 
-CMD java -Dloader.path=/app/lib ${JAVA_OPTS} -jar /app/opendistro-http-api.jar
+CMD java -Dloader.path=/app/lib ${JAVA_OPTS} -jar /app/opendistro-http-api.jar ${APP_ARGS}
