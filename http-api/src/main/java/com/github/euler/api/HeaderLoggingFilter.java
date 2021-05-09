@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-//@Component
+@Component
 public class HeaderLoggingFilter implements Filter {
 
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -26,7 +26,7 @@ public class HeaderLoggingFilter implements Filter {
         String headers = Collections.list(req.getHeaderNames()).stream()
                 .map(h -> h + " = " + req.getHeader(h))
                 .collect(Collectors.joining(", "));
-        LOGGER.info(headers);
+        LOGGER.info("Headers: {}", headers);
         chain.doFilter(request, response);
     }
 
