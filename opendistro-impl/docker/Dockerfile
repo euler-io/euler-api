@@ -20,7 +20,7 @@ RUN apt-get update \
 ARG SOURCE_BRANCH=master
 ARG REPO_URL=https://github.com/euler-io/euler-api.git
 ARG CLONE_ARGS="--depth 1"
-ARG COMPILE_OPTS=-Dmaven.test.skip -DdownloadSources=false -DdownloadJavadocs=false
+ARG COMPILE_OPTS="-Dmaven.test.skip -DdownloadSources=false -DdownloadJavadocs=false"
 
 # Compiling branch
 RUN mkdir /src \
