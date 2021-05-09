@@ -9,12 +9,12 @@ import com.github.euler.api.security.SecurityConfiguration;
 
 @SpringBootApplication
 @ComponentScan(basePackageClasses = { MappingConfiguration.class, OpendistroJobDetailsPersistence.class,
-		SecurityConfiguration.class, AuthController.class, EulerApiCustomiser.class })
+        SecurityConfiguration.class, AuthController.class })
 public class OpenDistroEulerHttpApiApplication extends EulerHttpApiApplication {
 
-	public static void main(String[] args) {
-		OpenDistroEulerHttpApiApplication api = new OpenDistroEulerHttpApiApplication();
-		api.start(args);
-	}
+    public static void main(String[] args) {
+        OpenDistroEulerHttpApiApplication api = new OpenDistroEulerHttpApiApplication();
+        api.start(args);
+    }
 
 }
