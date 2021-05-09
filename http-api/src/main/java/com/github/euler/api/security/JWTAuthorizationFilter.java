@@ -35,7 +35,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
         boolean headerAbsent = header == null || !header.startsWith(TOKEN_PREFIX);
         if (headerAbsent) {
-            LOGGER.info("{} missing or not {}..", HEADER_STRING, TOKEN_PREFIX);
+            LOGGER.info("{} missing or not {}.", HEADER_STRING, TOKEN_PREFIX);
             chain.doFilter(req, res);
             return;
         }
