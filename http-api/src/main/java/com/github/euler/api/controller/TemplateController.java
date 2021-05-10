@@ -19,86 +19,86 @@ import com.github.euler.api.model.Template;
 import com.github.euler.api.model.TemplateConfig;
 import com.github.euler.api.model.TemplateDetails;
 import com.github.euler.api.model.TemplateParams;
-import com.github.euler.api.persistence.TemplatePersistence;
 import com.github.euler.api.persistence.UserJobDetailsPersistence;
+import com.github.euler.api.persistence.UserTemplatePersistence;
 
 import akka.actor.typed.ActorSystem;
 
 @RestController
 public class TemplateController implements TemplateApi {
 
-	private final ActorSystem<APICommand> system;
-	private final UserJobDetailsPersistence jobDetailsPersistence;
-	private final TemplatePersistence persistence;
+    private final ActorSystem<APICommand> system;
+    private final UserJobDetailsPersistence jobDetailsPersistence;
+    private final UserTemplatePersistence persistence;
 
-	private final TemplateValidator validator;
-	private final JobGenerator jobGenerator;
+    private final TemplateValidator validator;
+    private final JobGenerator jobGenerator;
 
-	@Autowired
-	public TemplateController(ActorSystem<APICommand> system, UserJobDetailsPersistence jobDetailsPersistence,
-			TemplatePersistence persistence) {
-		super();
-		this.system = system;
-		this.jobDetailsPersistence = jobDetailsPersistence;
-		this.persistence = persistence;
+    @Autowired
+    public TemplateController(ActorSystem<APICommand> system, UserJobDetailsPersistence jobDetailsPersistence,
+            UserTemplatePersistence persistence) {
+        super();
+        this.system = system;
+        this.jobDetailsPersistence = jobDetailsPersistence;
+        this.persistence = persistence;
 
-		this.validator = new TemplateValidator();
-		this.jobGenerator = new JobGenerator();
-	}
+        this.validator = new TemplateValidator();
+        this.jobGenerator = new JobGenerator();
+    }
 
-	@Override
-	public ResponseEntity<Template> createNewTemplate(TemplateConfig body) {
-		if (validator.isValid(body)) {
-			try {
-				TemplateDetails details = new TemplateDetails();
-				details.setConfig(body.getConfig());
-				details.setName(body.getName());
-				Template template = TemplateUtils.fromDetails(persistence.create(details));
-				return new ResponseEntity<Template>(template, HttpStatus.OK);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		} else {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-	}
+    @Override
+    public ResponseEntity<Template> createNewTemplate(TemplateConfig body) {
+        if (validator.isValid(body)) {
+            try {
+                TemplateDetails details = new TemplateDetails();
+                details.setConfig(body.getConfig());
+                details.setName(body.getName());
+                Template template = TemplateUtils.fromDetails(persistence.create(details));
+                return new ResponseEntity<Template>(template, HttpStatus.OK);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 
-	@Override
-	public ResponseEntity<Void> deleteTemplate(String templateName) {
-		try {
-			persistence.delete(templateName);
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @Override
+    public ResponseEntity<Void> deleteTemplate(String templateName) {
+        try {
+            persistence.delete(templateName);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@Override
-	public ResponseEntity<Job> enqueueTemplate(String templateName, TemplateParams params) {
-		try {
-			TemplateDetails template = persistence.get(templateName);
-			JobDetails details = jobGenerator.generate(template, params);
-			Job job = JobUtils.fromDetails(jobDetailsPersistence.create(details));
-			enqueueJob(job.getId());
-			return new ResponseEntity<>(job, HttpStatus.OK);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @Override
+    public ResponseEntity<Job> enqueueTemplate(String templateName, TemplateParams params) {
+        try {
+            TemplateDetails template = persistence.get(templateName);
+            JobDetails details = jobGenerator.generate(template, params);
+            Job job = JobUtils.fromDetails(jobDetailsPersistence.create(details));
+            enqueueJob(job.getId());
+            return new ResponseEntity<>(job, HttpStatus.OK);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public void enqueueJob(String jobId) {
-		JobToEnqueue msg = new JobToEnqueue(jobId);
-		system.tell(msg);
-	}
+    public void enqueueJob(String jobId) {
+        JobToEnqueue msg = new JobToEnqueue(jobId);
+        system.tell(msg);
+    }
 
-	@Override
-	public ResponseEntity<TemplateDetails> getTemplateDetails(String templateName) {
-		try {
-			TemplateDetails templateDetails = persistence.get(templateName);
-			return new ResponseEntity<TemplateDetails>(templateDetails, HttpStatus.OK);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @Override
+    public ResponseEntity<TemplateDetails> getTemplateDetails(String templateName) {
+        try {
+            TemplateDetails templateDetails = persistence.get(templateName);
+            return new ResponseEntity<TemplateDetails>(templateDetails, HttpStatus.OK);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }
