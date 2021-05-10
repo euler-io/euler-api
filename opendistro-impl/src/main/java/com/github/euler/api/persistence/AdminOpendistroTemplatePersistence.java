@@ -23,14 +23,10 @@ public class AdminOpendistroTemplatePersistence extends OpendistroTemplatePersis
 
     @PostConstruct
     protected void initializeJobIndex() throws IOException {
-        try {
-            boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
-            if (autoInitialize) {
-                String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.template-index.mappings").root().render(ConfigRenderOptions.concise());
-                initializeIndex(client, getTemplateIndex(), jsonMapping, getRequestOptions());
-            }
-        } finally {
-            client.close();
+        boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
+        if (autoInitialize) {
+            String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.template-index.mappings").root().render(ConfigRenderOptions.concise());
+            initializeIndex(client, getTemplateIndex(), jsonMapping, getRequestOptions());
         }
     }
 
