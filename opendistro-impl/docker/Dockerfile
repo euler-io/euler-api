@@ -22,11 +22,14 @@ ARG REPO_URL=https://github.com/euler-io/euler-api.git
 ARG CLONE_ARGS="--depth 1"
 ARG COMPILE_OPTS="-Dmaven.test.skip -DdownloadSources=false -DdownloadJavadocs=false"
 
-# Compiling branch
+# Clone and download dependencies
 RUN mkdir /src \
 	&& cd /src \
 	&& git clone --branch $SOURCE_BRANCH $CLONE_ARGS $REPO_URL /src \
-	&& mvn package $COMPILE_OPTS
+	&& mvn dependency:go-offline
+
+# Package
+RUN mvn package $COMPILE_OPTS
 
 FROM debian:buster
 
