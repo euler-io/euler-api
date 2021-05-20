@@ -6,11 +6,11 @@
     <artifactId>opendistro-impl</artifactId>
     <packaging>jar</packaging>
     <name>Euler HTTP API - Opendistro (Elasticsearch) Implementation</name>
-    <version>0.7.8</version>
+    <version>0.7.9-SNAPSHOT</version>
     <parent>
         <groupId>com.github.euler-io</groupId>
         <artifactId>euler-api</artifactId>
-        <version>0.7.8</version>
+        <version>0.7.9-SNAPSHOT</version>
     </parent>
     <properties>
         <euler.libraries>provided</euler.libraries>
