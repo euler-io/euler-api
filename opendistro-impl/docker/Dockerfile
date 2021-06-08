@@ -36,7 +36,10 @@ ENV APP_ARGS=""
 # Installing dependencies
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
-		openjdk-11-jre-headless
+		openjdk-11-jre-headless \
+		tesseract-ocr tesseract-ocr-por tesseract-ocr-eng tesseract-ocr-osd \
+		libreoffice \
+		imagemagick
 
 # Installing app
 RUN mkdir -p /app/lib
