@@ -6,11 +6,11 @@
     <artifactId>opendistro-impl</artifactId>
     <packaging>jar</packaging>
     <name>Euler HTTP API - Opendistro (Elasticsearch) Implementation</name>
-    <version>0.7.10-SNAPSHOT</version>
+    <version>0.7.10</version>
     <parent>
         <groupId>com.github.euler-io</groupId>
         <artifactId>euler-api</artifactId>
-        <version>0.7.10-SNAPSHOT</version>
+        <version>0.7.10</version>
     </parent>
     <properties>
         <euler.libraries>provided</euler.libraries>
@@ -21,21 +21,21 @@
             <artifactId>http-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.euler-io</groupId>
-            <artifactId>euler-file</artifactId>
-            <scope>${euler.libraries}</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.euler-io</groupId>
-            <artifactId>euler-tika</artifactId>
-            <scope>${euler.libraries}</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.euler-io</groupId>
-            <artifactId>euler-elasticsearch</artifactId>
-            <scope>${euler.libraries}</scope>
-        </dependency>
+<!--         <dependency> -->
+<!--             <groupId>com.github.euler-io</groupId> -->
+<!--             <artifactId>euler-file</artifactId> -->
+<!--             <scope>${euler.libraries}</scope> -->
+<!--         </dependency> -->
+<!--         <dependency> -->
+<!--             <groupId>com.github.euler-io</groupId> -->
+<!--             <artifactId>euler-tika</artifactId> -->
+<!--             <scope>${euler.libraries}</scope> -->
+<!--         </dependency> -->
+<!--         <dependency> -->
+<!--             <groupId>com.github.euler-io</groupId> -->
+<!--             <artifactId>euler-elasticsearch</artifactId> -->
+<!--             <scope>${euler.libraries}</scope> -->
+<!--         </dependency> -->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
