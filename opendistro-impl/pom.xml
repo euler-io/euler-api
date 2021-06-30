@@ -23,24 +23,24 @@
             <artifactId>http-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--         <dependency> -->
-<!--             <groupId>com.github.euler-io</groupId> -->
-<!--             <artifactId>euler-file</artifactId> -->
-<!--             <scope>${euler.libraries}</scope> -->
-<!--             <optional>true</optional> -->
-<!--         </dependency> -->
-<!--         <dependency> -->
-<!--             <groupId>com.github.euler-io</groupId> -->
-<!--             <artifactId>euler-tika</artifactId> -->
-<!--             <scope>${euler.libraries}</scope> -->
-<!--             <optional>true</optional> -->
-<!--         </dependency> -->
-<!--         <dependency> -->
-<!--             <groupId>com.github.euler-io</groupId> -->
-<!--             <artifactId>euler-elasticsearch</artifactId> -->
-<!--             <scope>${euler.libraries}</scope> -->
-<!--             <optional>true</optional> -->
-<!--         </dependency> -->
+        <!-- <dependency> -->
+        <!-- <groupId>com.github.euler-io</groupId> -->
+        <!-- <artifactId>euler-file</artifactId> -->
+        <!-- <scope>${euler.libraries}</scope> -->
+        <!-- <optional>true</optional> -->
+        <!-- </dependency> -->
+        <!-- <dependency> -->
+        <!-- <groupId>com.github.euler-io</groupId> -->
+        <!-- <artifactId>euler-tika</artifactId> -->
+        <!-- <scope>${euler.libraries}</scope> -->
+        <!-- <optional>true</optional> -->
+        <!-- </dependency> -->
+        <!-- <dependency> -->
+        <!-- <groupId>com.github.euler-io</groupId> -->
+        <!-- <artifactId>euler-elasticsearch</artifactId> -->
+        <!-- <scope>${euler.libraries}</scope> -->
+        <!-- <optional>true</optional> -->
+        <!-- </dependency> -->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
@@ -63,24 +63,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.4.5</version>
                 <configuration>
-                    <startClass>com.github.euler.api.OpenDistroEulerHttpApiApplication</startClass>
-                    <mainClass>org.springframework.boot.loader.PropertiesLauncher</mainClass>
+                    <mainClass>com.github.euler.api.OpenDistroEulerHttpApiApplication</mainClass>
                     <finalName>opendistro-http-api</finalName>
                     <layout>ZIP</layout>
-                    <excludes>
-                        <exclude>
-                            <groupId>com.github.euler-io</groupId>
-                            <artifactId>euler-file</artifactId>
-                        </exclude>
-                        <exclude>
-                            <groupId>com.github.euler-io</groupId>
-                            <artifactId>euler-tika</artifactId>
-                        </exclude>
-                        <exclude>
-                            <groupId>com.github.euler-io</groupId>
-                            <artifactId>euler-elasticsearch</artifactId>
-                        </exclude>
-                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -137,6 +122,24 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>dev</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.github.euler-io</groupId>
+                    <artifactId>euler-file</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.github.euler-io</groupId>
+                    <artifactId>euler-tika</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.github.euler-io</groupId>
+                    <artifactId>euler-elasticsearch</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
+
 </project>
 
