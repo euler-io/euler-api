@@ -80,7 +80,11 @@ public class APIJobExecution extends AbstractBehavior<JobCommand> {
 
     private Behavior<JobCommand> onJobProcessed(JobProcessed msg) throws IOException {
         job.replyTo.tell(new APIJobProcessed(job));
-        this.hooks.close();
+        try {
+            this.hooks.close();
+        } catch (Exception e) {
+            LOGGER.warn("Error closing job " + job.id + ".", e);
+        }
         return Behaviors.stopped();
     }
 
