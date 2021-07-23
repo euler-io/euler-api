@@ -2,6 +2,8 @@ package com.github.euler.api.controller;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,8 @@ import akka.actor.typed.ActorSystem;
 
 @RestController
 public class TemplateController implements TemplateApi {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final ActorSystem<APICommand> system;
     private final UserJobDetailsPersistence jobDetailsPersistence;
@@ -77,12 +81,17 @@ public class TemplateController implements TemplateApi {
     public ResponseEntity<Job> enqueueTemplate(String templateName, TemplateParams params) {
         try {
             TemplateDetails template = persistence.get(templateName);
-            JobDetails details = jobGenerator.generate(template, params);
-            Job job = JobUtils.fromDetails(jobDetailsPersistence.create(details));
-            enqueueJob(job.getId());
-            return new ResponseEntity<>(job, HttpStatus.OK);
+            if (template != null) {
+                JobDetails details = jobGenerator.generate(template, params);
+                Job job = JobUtils.fromDetails(jobDetailsPersistence.create(details));
+                enqueueJob(job.getId());
+                return new ResponseEntity<>(job, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<Job>(new Job(), HttpStatus.NOT_FOUND);
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            LOGGER.warn("Error generating template.", e);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 

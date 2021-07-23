@@ -25,4 +25,11 @@ public class APIQueueState {
         return numRunning;
     }
 
+    public JobToEnqueue error(String id, boolean decrease) {
+        if (decrease) {
+            this.numRunning--;
+        }
+        return mapping.remove(id);
+    }
+
 }

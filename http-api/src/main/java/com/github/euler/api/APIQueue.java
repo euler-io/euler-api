@@ -5,6 +5,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.api.model.Job;
 import com.github.euler.api.model.JobDetails;
@@ -27,6 +30,8 @@ import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class APIQueue extends AbstractBehavior<APICommand> {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private static final String EULER = "euler-";
 
@@ -131,11 +136,25 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     private void process(JobDetails jobDetails) throws IOException, URISyntaxException {
         Config config = getConfig(jobDetails);
         URI uri = new URI(jobDetails.getSeed());
-        ActorRef<JobCommand> ref = spawn(jobDetails.getId(), config);
-        state.running();
-        persistence.updateRunning(jobDetails.getId());
-        APIJob jobMsg = new APIJob(jobDetails.getId(), uri, responseAdaptor);
-        ref.tell(jobMsg);
+        ActorRef<JobCommand> ref = null;
+        try {
+            ref = spawn(jobDetails.getId(), config);
+        } catch (Exception e) {
+            LOGGER.warn("Error spawning job " + jobDetails.getId(), e);
+        }
+        if (ref != null) {
+            state.running();
+            persistence.updateRunning(jobDetails.getId());
+            APIJob jobMsg = new APIJob(jobDetails.getId(), uri, responseAdaptor);
+            ref.tell(jobMsg);
+        } else {
+            persistence.updateStatus(jobDetails.getId(), JobStatus.ERROR);
+            JobToEnqueue original = state.error(jobDetails.getId(), false);
+            if (original != null && original.replyTo != null) {
+                original.replyTo.tell(new JobFinished(jobDetails.getId()));
+            }
+            scheduleProcessNext();
+        }
     }
 
     private Config getConfig(JobDetails jobDetails) throws IOException {
@@ -167,9 +186,21 @@ public class APIQueue extends AbstractBehavior<APICommand> {
     private Behavior<APICommand> onInternalAdaptedEulerCommand(InternalAdaptedJobCommand msg) throws IOException, URISyntaxException {
         if (msg.response instanceof APIJobProcessed) {
             return onJobProcessed((APIJobProcessed) msg.response);
+        } else if (msg.response instanceof JobError) {
+            return onJobError((JobError) msg.response);
         } else {
             throw new IllegalArgumentException("Unknown response: " + msg.response.getClass().getName());
         }
+    }
+
+    public Behavior<APICommand> onJobError(JobError msg) throws IOException {
+        persistence.updateStatus(msg.jobId, JobStatus.ERROR);
+        JobToEnqueue original = state.error(msg.jobId, true);
+        if (original != null && original.replyTo != null) {
+            original.replyTo.tell(new JobFinished(msg.jobId));
+        }
+        scheduleProcessNext();
+        return this;
     }
 
     private Behavior<APICommand> onJobProcessed(APIJobProcessed msg) throws IOException, URISyntaxException {
