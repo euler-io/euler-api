@@ -5,8 +5,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -26,7 +24,6 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.github.euler.opendistro.OpenDistroClient;
@@ -37,21 +34,11 @@ import com.typesafe.config.ConfigException;
 public class OpenDistroConfiguration {
 
     private final APIConfiguration configuration;
-    private OpenDistroClient client;
 
     @Autowired
     public OpenDistroConfiguration(APIConfiguration configuraiton) {
         super();
         this.configuration = configuraiton;
-    }
-
-    @PostConstruct
-    public void postConstruct() {
-        start();
-    }
-
-    private void start() {
-        client = startClient();
     }
 
     public OpenDistroClient startClient() {
@@ -104,7 +91,7 @@ public class OpenDistroConfiguration {
         return new OpenDistroClient(builder);
     }
 
-    private String getUsername() {
+    public String getUsername() {
         Config config = configuration.getConfig();
         try {
             return config.getString("euler.http-api.elasticsearch.username");
@@ -113,28 +100,12 @@ public class OpenDistroConfiguration {
         }
     }
 
-    private String getPassword() {
+    public String getPassword() {
         Config config = configuration.getConfig();
         try {
             return config.getString("euler.http-api.elasticsearch.password");
         } catch (ConfigException.WrongType e) {
             return null;
-        }
-    }
-
-    @Bean
-    public OpenDistroClient opendistroClient() {
-        return client;
-    }
-
-    @PreDestroy
-    public void preDestroy() throws IOException {
-        stop();
-    }
-
-    private void stop() throws IOException {
-        if (client != null) {
-            client.close();
         }
     }
 

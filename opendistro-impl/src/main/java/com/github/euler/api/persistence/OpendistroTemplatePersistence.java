@@ -3,8 +3,6 @@ package com.github.euler.api.persistence;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.annotation.PreDestroy;
-
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -12,27 +10,16 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 
 import com.github.euler.api.APIConfiguration;
+import com.github.euler.api.OpenDistroClientManager;
 import com.github.euler.api.model.TemplateDetails;
-import com.github.euler.opendistro.OpenDistroClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
 
 public abstract class OpendistroTemplatePersistence extends AbstractTemplatePersistence implements TemplatePersistence {
 
-    public OpendistroTemplatePersistence(OpenDistroClient client, APIConfiguration configuration) {
-        super(client, configuration);
-    }
-
-    @PreDestroy
-    public void preDestroy() {
-        if (client != null) {
-            try {
-                client.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    public OpendistroTemplatePersistence(OpenDistroClientManager clientManager, APIConfiguration configuration) {
+        super(clientManager, configuration);
     }
 
     @Override
@@ -42,20 +29,20 @@ public abstract class OpendistroTemplatePersistence extends AbstractTemplatePers
         req.id(template.getName());
         req.source(Map.of("name", template.getName(),
                 "config", config.root().render(ConfigRenderOptions.concise())));
-        client.index(req, getRequestOptions());
+        getClient().index(req, getRequestOptions());
         return template;
     }
 
     @Override
     public void delete(String name) throws IOException {
         DeleteRequest req = new DeleteRequest(getTemplateIndex(), name);
-        client.delete(req, getRequestOptions());
+        getClient().delete(req, getRequestOptions());
     }
 
     @Override
     public TemplateDetails get(String name) throws IOException {
         GetRequest req = new GetRequest(getTemplateIndex(), name);
-        GetResponse resp = client.get(req, getRequestOptions());
+        GetResponse resp = getClient().get(req, getRequestOptions());
         Map<String, Object> source = resp.getSource();
         if (source != null) {
             return readValue(source);

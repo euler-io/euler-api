@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.PreDestroy;
-
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -22,30 +20,20 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.api.APIConfiguration;
-import com.github.euler.api.OpenDistroConfiguration;
+import com.github.euler.api.OpenDistroClientManager;
 import com.github.euler.api.model.Template;
 import com.github.euler.api.model.TemplateList;
+import com.github.euler.opendistro.OpenDistroClient;
 
 @Service
-public class OpendistroTemplatesPersistence extends AbstractTemplatePersistence implements TemplatesPersistence {
+public class UserOpendistroTemplatesPersistence extends AbstractTemplatePersistence implements TemplatesPersistence {
 
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public OpendistroTemplatesPersistence(OpenDistroConfiguration openDistroConfiguration, APIConfiguration configuration, ObjectMapper objectMapper) {
-        super(openDistroConfiguration.startClient(null, null), configuration);
+    public UserOpendistroTemplatesPersistence(OpenDistroClientManager clientManager, APIConfiguration configuration, ObjectMapper objectMapper) {
+        super(clientManager, configuration);
         this.objectMapper = objectMapper.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
-    @PreDestroy
-    public void preDestroy() {
-        if (client != null) {
-            try {
-                client.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     @Override
@@ -63,7 +51,7 @@ public class OpendistroTemplatesPersistence extends AbstractTemplatePersistence 
         searchSourceBuilder.size(size);
         searchSourceBuilder.from(page * size);
 
-        SearchResponse response = client.search(req, buildOptions());
+        SearchResponse response = getClient().search(req, buildOptions());
         int total = Long.valueOf(response.getHits().getTotalHits().value).intValue();
         List<Template> templates = Arrays.stream(response.getHits().getHits())
                 .map(h -> convert(h))
@@ -78,6 +66,11 @@ public class OpendistroTemplatesPersistence extends AbstractTemplatePersistence 
     protected Template convert(SearchHit h) {
         Map<String, Object> source = h.getSourceAsMap();
         return objectMapper.convertValue(source, Template.class);
+    }
+
+    @Override
+    protected OpenDistroClient getClient() {
+        return clientManager.getUserClient();
     }
 
 }

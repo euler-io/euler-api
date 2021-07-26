@@ -9,7 +9,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import com.github.euler.api.APIConfiguration;
-import com.github.euler.api.OpenDistroConfiguration;
+import com.github.euler.api.OpenDistroClientManager;
+import com.github.euler.opendistro.OpenDistroClient;
 import com.typesafe.config.ConfigRenderOptions;
 
 @Service
@@ -17,8 +18,8 @@ import com.typesafe.config.ConfigRenderOptions;
 public class AdminOpendistroTemplatePersistence extends OpendistroTemplatePersistence implements AdminTemplatePersistence {
 
     @Autowired
-    public AdminOpendistroTemplatePersistence(OpenDistroConfiguration openDistroConfiguration, APIConfiguration configuration) {
-        super(openDistroConfiguration.startClient(), configuration);
+    public AdminOpendistroTemplatePersistence(OpenDistroClientManager clientManager, APIConfiguration configuration) {
+        super(clientManager, configuration);
     }
 
     @PostConstruct
@@ -26,8 +27,13 @@ public class AdminOpendistroTemplatePersistence extends OpendistroTemplatePersis
         boolean autoInitialize = configuration.getConfig().getBoolean("euler.http-api.elasticsearch.auto-initialize-indices");
         if (autoInitialize) {
             String jsonMapping = configuration.getConfig().getConfig("euler.http-api.elasticsearch.template-index.mappings").root().render(ConfigRenderOptions.concise());
-            initializeIndex(client, getTemplateIndex(), jsonMapping, getRequestOptions());
+            initializeIndex(getClient(), getTemplateIndex(), jsonMapping, getRequestOptions());
         }
+    }
+
+    @Override
+    protected OpenDistroClient getClient() {
+        return clientManager.getAdminClient();
     }
 
 }

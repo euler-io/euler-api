@@ -1,7 +1,7 @@
 package com.github.euler.api.security;
 
-import static com.github.euler.api.security.SecurityConstants.HEADER_STRING;
-import static com.github.euler.api.security.SecurityConstants.TOKEN_PREFIX;
+import static com.github.euler.api.security.SecurityConstants.AUTHORIZATION_HEADER;
+import static com.github.euler.api.security.SecurityConstants.JWT_TOKEN_PREFIX;
 
 import java.io.IOException;
 
@@ -31,11 +31,11 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException, ServletException {
-        String header = req.getHeader(HEADER_STRING);
+        String header = req.getHeader(AUTHORIZATION_HEADER);
 
-        boolean headerAbsent = header == null || !header.startsWith(TOKEN_PREFIX);
+        boolean headerAbsent = header == null || !header.startsWith(JWT_TOKEN_PREFIX);
         if (headerAbsent) {
-            LOGGER.info("{} missing or not {}.", HEADER_STRING, TOKEN_PREFIX);
+            LOGGER.info("{} missing or not {}.", AUTHORIZATION_HEADER, JWT_TOKEN_PREFIX);
             chain.doFilter(req, res);
             return;
         }
@@ -51,7 +51,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private JWTAuthenticationToken getAuthentication(HttpServletRequest request) throws JWTVerificationException {
-        String header = request.getHeader(HEADER_STRING);
+        String header = request.getHeader(AUTHORIZATION_HEADER);
         if (header != null) {
             return JWTUtils.getAuthentication(securityService.getSecret(), header);
         }

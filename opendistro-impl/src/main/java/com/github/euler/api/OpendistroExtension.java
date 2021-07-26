@@ -14,17 +14,17 @@ import com.github.euler.opendistro.OpendistroClientConfigConverter;
 @Configuration
 public class OpendistroExtension implements EulerExtension {
 
-    private final OpenDistroConfiguration openDistroConfiguration;
+    private final OpenDistroClientManager clientManager;
 
     @Autowired
-    public OpendistroExtension(OpenDistroConfiguration openDistroConfiguration) {
+    public OpendistroExtension(OpenDistroClientManager clientManager) {
         super();
-        this.openDistroConfiguration = openDistroConfiguration;
+        this.clientManager = clientManager;
     }
 
     @Override
     public List<TypeConfigConverter<?>> typeConverters() {
-        OpenDistroClient client = openDistroConfiguration.startClient();
+        OpenDistroClient client = clientManager.getAdminClient();
         return Arrays.asList(new OpendistroClientConfigConverter(client));
     }
 

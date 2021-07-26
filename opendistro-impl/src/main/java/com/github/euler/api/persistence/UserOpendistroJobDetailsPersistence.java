@@ -7,21 +7,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.euler.api.APIConfiguration;
-import com.github.euler.api.OpenDistroConfiguration;
+import com.github.euler.api.OpenDistroClientManager;
+import com.github.euler.opendistro.OpenDistroClient;
 
 @Service
 public class UserOpendistroJobDetailsPersistence extends OpendistroJobDetailsPersistence
-		implements UserJobDetailsPersistence {
+        implements UserJobDetailsPersistence {
 
-	@Autowired
-	public UserOpendistroJobDetailsPersistence(OpenDistroConfiguration openDistroConfiguration,
-			APIConfiguration configuration) {
-		super(openDistroConfiguration.startClient(null, null), configuration);
-	}
+    @Autowired
+    public UserOpendistroJobDetailsPersistence(OpenDistroClientManager clientManager,
+            APIConfiguration configuration) {
+        super(clientManager, configuration);
+    }
 
-	@Override
-	RequestOptions getRequestOptions() {
-		return buildOptions();
-	}
+    @Override
+    RequestOptions getRequestOptions() {
+        return buildOptions();
+    }
+
+    @Override
+    protected OpenDistroClient getClient() {
+        return clientManager.getUserClient();
+    }
 
 }

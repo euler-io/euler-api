@@ -1,6 +1,6 @@
 package com.github.euler.api.security;
 
-import static com.github.euler.api.security.SecurityConstants.TOKEN_PREFIX;
+import static com.github.euler.api.security.SecurityConstants.JWT_TOKEN_PREFIX;
 
 import java.util.Base64;
 
@@ -13,7 +13,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 public class JWTUtils {
 
     public static JWTAuthenticationToken getAuthentication(byte[] secret, String header) throws JWTVerificationException {
-        String token = header.replace(TOKEN_PREFIX, "");
+        String token = header.replace(JWT_TOKEN_PREFIX, "");
         DecodedJWT decodedJWT = getDecodedAndVerifiedJWT(secret, token);
         return new JWTAuthenticationToken(decodedJWT, token);
     }

@@ -7,19 +7,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.euler.api.APIConfiguration;
-import com.github.euler.api.OpenDistroConfiguration;
+import com.github.euler.api.OpenDistroClientManager;
+import com.github.euler.opendistro.OpenDistroClient;
 
 @Service
 public class UserOpendistroTemplatePersistence extends OpendistroTemplatePersistence implements UserTemplatePersistence {
 
     @Autowired
-    public UserOpendistroTemplatePersistence(OpenDistroConfiguration openDistroConfiguration, APIConfiguration configuration) {
-        super(openDistroConfiguration.startClient(null, null), configuration);
+    public UserOpendistroTemplatePersistence(OpenDistroClientManager clientManager, APIConfiguration configuration) {
+        super(clientManager, configuration);
     }
 
     @Override
     RequestOptions getRequestOptions() {
         return buildOptions();
+    }
+
+    @Override
+    protected OpenDistroClient getClient() {
+        return clientManager.getUserClient();
     }
 
 }

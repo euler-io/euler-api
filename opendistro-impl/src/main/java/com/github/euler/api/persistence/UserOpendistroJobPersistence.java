@@ -8,20 +8,26 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.api.APIConfiguration;
-import com.github.euler.api.OpenDistroConfiguration;
+import com.github.euler.api.OpenDistroClientManager;
+import com.github.euler.opendistro.OpenDistroClient;
 
 @Service
 public class UserOpendistroJobPersistence extends OpendistroJobPersistence implements UserJobPersistence {
 
-	@Autowired
-	public UserOpendistroJobPersistence(OpenDistroConfiguration openDistroConfiguration, APIConfiguration configuration,
-			ObjectMapper objectMapper) {
-		super(openDistroConfiguration.startClient(null, null), configuration, objectMapper);
-	}
+    @Autowired
+    public UserOpendistroJobPersistence(OpenDistroClientManager clientManager, APIConfiguration configuration,
+            ObjectMapper objectMapper) {
+        super(clientManager, configuration, objectMapper);
+    }
 
-	@Override
-	RequestOptions getRequestOptions() {
-		return buildOptions();
-	}
+    @Override
+    RequestOptions getRequestOptions() {
+        return buildOptions();
+    }
+
+    @Override
+    protected OpenDistroClient getClient() {
+        return clientManager.getUserClient();
+    }
 
 }

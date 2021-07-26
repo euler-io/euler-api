@@ -1,14 +1,14 @@
 package com.github.euler.api.persistence;
 
 import com.github.euler.api.APIConfiguration;
-import com.github.euler.opendistro.OpenDistroClient;
+import com.github.euler.api.OpenDistroClientManager;
 
-public class AbstractTemplatePersistence extends OpendistroPersistence {
+public abstract class AbstractTemplatePersistence extends OpendistroPersistence {
 
     protected final APIConfiguration configuration;
 
-    public AbstractTemplatePersistence(OpenDistroClient client, APIConfiguration configuration) {
-        super(client);
+    public AbstractTemplatePersistence(OpenDistroClientManager clientManager, APIConfiguration configuration) {
+        super(clientManager);
         this.configuration = configuration;
     }
 
