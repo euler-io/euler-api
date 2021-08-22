@@ -15,6 +15,8 @@ import com.github.euler.core.JobProcessed;
 import com.github.euler.core.JobToProcess;
 import com.github.euler.core.ProcessorCommand;
 import com.github.euler.core.SourceCommand;
+import com.github.euler.core.source.DefaultSourceNotificationStrategy;
+import com.github.euler.core.source.SourceNotificationStrategy;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -28,30 +30,30 @@ public class APIJobExecution extends AbstractBehavior<JobCommand> {
 
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    public static Behavior<JobCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior, EulerHooks hooks) {
-        return Behaviors.setup((context) -> new APIJobExecution(context, sourceBehavior, processorBehavior, hooks));
+    public static Behavior<JobCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior, EulerHooks hooks,
+            SourceNotificationStrategy sns) {
+        return Behaviors.setup((context) -> new APIJobExecution(context, sourceBehavior, processorBehavior, hooks, sns));
     }
 
     public static Behavior<JobCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
-        return Behaviors.setup((context) -> new APIJobExecution(context, sourceBehavior, processorBehavior));
+        return create(sourceBehavior, processorBehavior, new EulerHooks(), new DefaultSourceNotificationStrategy());
     }
 
     private final Behavior<SourceCommand> sourceBehavior;
     private final Behavior<ProcessorCommand> processorBehavior;
     private final EulerHooks hooks;
+    private final SourceNotificationStrategy sns;
 
     private APIJob job;
     private ActorRef<EulerCommand> eulerRef;
 
-    private APIJobExecution(ActorContext<JobCommand> context, Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior, EulerHooks hooks) {
+    private APIJobExecution(ActorContext<JobCommand> context, Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior, EulerHooks hooks,
+            SourceNotificationStrategy sns) {
         super(context);
         this.sourceBehavior = sourceBehavior;
         this.processorBehavior = processorBehavior;
         this.hooks = hooks;
-    }
-
-    private APIJobExecution(ActorContext<JobCommand> context, Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
-        this(context, sourceBehavior, processorBehavior, new EulerHooks());
+        this.sns = sns;
     }
 
     @Override
@@ -66,7 +68,7 @@ public class APIJobExecution extends AbstractBehavior<JobCommand> {
         try {
             this.hooks.initialize();
             this.job = msg;
-            this.eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior), "euler");
+            this.eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior, sns), "euler");
             eulerRef.tell(new JobToProcess(msg.uri, getContext().getSelf()));
         } catch (Exception e) {
             StringWriter sw = new StringWriter();

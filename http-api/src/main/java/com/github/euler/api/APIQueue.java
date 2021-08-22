@@ -135,9 +135,10 @@ public class APIQueue extends AbstractBehavior<APICommand> {
 
     private void process(JobDetails jobDetails) throws IOException, URISyntaxException {
         Config config = getConfig(jobDetails);
-        URI uri = new URI(jobDetails.getSeed());
         ActorRef<JobCommand> ref = null;
+        URI uri = null;
         try {
+            uri = new URI(jobDetails.getSeed());
             ref = spawn(jobDetails.getId(), config);
         } catch (Exception e) {
             LOGGER.warn("Error spawning job " + jobDetails.getId(), e);
@@ -176,7 +177,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         } catch (ConfigException.WrongType e) {
             value = config.getValue("config");
         }
-        return converter.create(value, (s, p, h) -> APIJobExecution.create(s, p, h));
+        return converter.create(value, (s, p, h, sns) -> APIJobExecution.create(s, p, h, sns));
     }
 
     protected String getChildName(String jobId) {
