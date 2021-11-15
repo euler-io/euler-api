@@ -53,6 +53,12 @@ public abstract class OpendistroJobDetailsPersistence extends AbstractJobPersist
         jobDetails.setSeed(config.getString("seed"));
         jobDetails.setStatus(JobStatus.fromValue(config.getString("status")));
         jobDetails.setConfig(config.getConfig("config").root().unwrapped());
+
+        if (config.hasPath("tags")) {
+            String[] tags = config.getStringList("tags").stream().toArray(s -> new String[s]);
+            jobDetails.setTags(tags);
+        }
+
         return jobDetails;
     }
 
@@ -69,7 +75,10 @@ public abstract class OpendistroJobDetailsPersistence extends AbstractJobPersist
 
     private Map<String, ?> buildSource(JobDetails job) {
         Map<String, Object> map = new HashMap<>(
-                Map.of("seed", job.getSeed(), "status", job.getStatus().name(), "config", job.getConfig()));
+                Map.of("seed", job.getSeed(),
+                        "status", job.getStatus().name(),
+                        "config", job.getConfig(),
+                        "tags", job.getTags()));
         if (job.getCreationDate() != null) {
             map.put("creation-date", datetimeSerializer.serialize(job.getCreationDate()));
         }
@@ -80,14 +89,13 @@ public abstract class OpendistroJobDetailsPersistence extends AbstractJobPersist
             map.put("start-date", datetimeSerializer.serialize(job.getStartDate()));
         }
         if (job.getEndDate() != null) {
-            map.put("end-date", datetimeSerializer.serialize(job.getEndDate()));
         }
         return map;
     }
 
     @Override
     public JobDetails getNext() throws IOException {
-        SearchHit[] hits = listJobs(0, 1, SortBy.ENQUEUED_DATE, SortDirection.ASC, JobStatus.ENQUEUED, false).getHits()
+        SearchHit[] hits = listJobs(0, 1, SortBy.ENQUEUED_DATE, SortDirection.ASC, new JobStatus[] { JobStatus.ENQUEUED }, null, false).getHits()
                 .getHits();
         return Arrays.stream(hits).map(h -> convert(h)).filter(j -> j.getStatus() == JobStatus.ENQUEUED).findFirst()
                 .orElse(null);

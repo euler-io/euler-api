@@ -1,13 +1,14 @@
 package com.github.euler.api.persistence;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -33,23 +34,29 @@ public abstract class AbstractJobPersistence<J extends Job> extends OpendistroPe
     }
 
     protected SearchResponse listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection,
-            JobStatus status, boolean requestCache) throws IOException {
+            JobStatus[] status, String[] tags, boolean requestCache) throws IOException {
         SearchRequest req = new SearchRequest(getJobIndex());
         req.requestCache(requestCache);
-        QueryBuilder query;
-        if (status != null) {
-            query = QueryBuilders.termQuery("status", status);
-        } else {
-            query = QueryBuilders.matchAllQuery();
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        if (status != null && status.length > 0) {
+            query.filter(QueryBuilders.termsQuery("status", Set.of(status)));
         }
+        if (tags != null && tags.length > 0) {
+            query.filter(QueryBuilders.termsQuery("tags", Set.of(tags)));
+        }
+        if (query.filter().isEmpty()) {
+            query.filter(QueryBuilders.matchAllQuery());
+        }
+
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(query);
         searchSourceBuilder.size(size);
         searchSourceBuilder.from(page * size);
-        searchSourceBuilder.sort(sortBy.toString().toLowerCase().replace('_', '-'),
-                SortOrder.fromString(sortDirection.toString()));
+        searchSourceBuilder.sort(sortBy.toString().toLowerCase().replace('_', '-'), SortOrder.fromString(sortDirection.toString()));
         req.source(searchSourceBuilder);
-        return getClient().search(req, getRequestOptions());
+        return
+
+        getClient().search(req, getRequestOptions());
     }
 
     public J get(String id) throws IOException {

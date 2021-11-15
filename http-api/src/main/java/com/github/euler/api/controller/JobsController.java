@@ -16,37 +16,37 @@ import com.github.euler.api.persistence.UserJobPersistence;
 @RestController
 public class JobsController implements JobsAPI {
 
-	private final UserJobPersistence persistence;
+    private final UserJobPersistence persistence;
 
-	@Autowired
-	public JobsController(UserJobPersistence persistence) {
-		super();
-		this.persistence = persistence;
-	}
+    @Autowired
+    public JobsController(UserJobPersistence persistence) {
+        super();
+        this.persistence = persistence;
+    }
 
-	@Override
-	public ResponseEntity<JobList> listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection,
-			JobStatus status) {
-		if (page == null) {
-			page = 0;
-		}
-		if (size == null) {
-			size = 10;
-		}
-		size = Math.min(size, 1000);
-		if (sortBy == null) {
-			sortBy = SortBy.CREATION_DATE;
-		}
-		if (sortDirection == null) {
-			sortDirection = SortDirection.ASC;
-		}
-		JobList list;
-		try {
-			list = persistence.list(page, size, sortBy, sortDirection, status);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		return new ResponseEntity<JobList>(list, HttpStatus.OK);
-	}
+    @Override
+    public ResponseEntity<JobList> listJobs(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection,
+            JobStatus[] status, String[] tags) {
+        if (page == null) {
+            page = 0;
+        }
+        if (size == null) {
+            size = 10;
+        }
+        size = Math.min(size, 1000);
+        if (sortBy == null) {
+            sortBy = SortBy.CREATION_DATE;
+        }
+        if (sortDirection == null) {
+            sortDirection = SortDirection.ASC;
+        }
+        JobList list;
+        try {
+            list = persistence.list(page, size, sortBy, sortDirection, status, tags);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new ResponseEntity<JobList>(list, HttpStatus.OK);
+    }
 
 }

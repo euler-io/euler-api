@@ -15,90 +15,116 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 @Validated
 public class JobConfig {
-	@JsonProperty("config")
-	private Object config = null;
 
-	@JsonProperty("seed")
-	private String seed = null;
+    @JsonProperty("tags")
+    private String[] tags = new String[0];
 
-	public JobConfig config(Object config) {
-		this.config = config;
-		return this;
-	}
+    @JsonProperty("config")
+    private Object config = null;
 
-	/**
-	 * Get config
-	 * 
-	 * @return config
-	 **/
-	@Schema
-	@NotNull
+    @JsonProperty("seed")
+    private String seed = null;
 
-	public Object getConfig() {
-		return config;
-	}
+    /**
+     * Get tags
+     * 
+     * @return tags
+     **/
+    @Schema
+    @NotNull
+    public String[] getTags() {
+        return tags;
+    }
 
-	public void setConfig(Object config) {
-		this.config = config;
-	}
+    public void setTags(String[] tags) {
+        this.tags = tags;
+    }
 
-	public JobConfig seed(String seed) {
-		this.seed = seed;
-		return this;
-	}
+    public JobConfig tags(String[] tags) {
+        this.tags = tags;
+        return this;
+    }
 
-	/**
-	 * Get seed
-	 * 
-	 * @return seed
-	 **/
-	@Schema
-	@NotNull
+    public JobConfig config(Object config) {
+        this.config = config;
+        return this;
+    }
 
-	public String getSeed() {
-		return seed;
-	}
+    /**
+     * Get config
+     * 
+     * @return config
+     **/
+    @Schema
+    @NotNull
 
-	public void setSeed(String seed) {
-		this.seed = seed;
-	}
+    public Object getConfig() {
+        return config;
+    }
 
-	@Override
-	public boolean equals(java.lang.Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		JobConfig jobConfig = (JobConfig) o;
-		return Objects.equals(this.config, jobConfig.config) && Objects.equals(this.seed, jobConfig.seed);
-	}
+    public void setConfig(Object config) {
+        this.config = config;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(config, seed);
-	}
+    public JobConfig seed(String seed) {
+        this.seed = seed;
+        return this;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("class JobConfig {\n");
+    /**
+     * Get seed
+     * 
+     * @return seed
+     **/
+    @Schema
+    @NotNull
 
-		sb.append("    config: ").append(toIndentedString(config)).append("\n");
-		sb.append("    seed: ").append(toIndentedString(seed)).append("\n");
-		sb.append("}");
-		return sb.toString();
-	}
+    public String getSeed() {
+        return seed;
+    }
 
-	/**
-	 * Convert the given object to string with each line indented by 4 spaces
-	 * (except the first line).
-	 */
-	private String toIndentedString(java.lang.Object o) {
-		if (o == null) {
-			return "null";
-		}
-		return o.toString().replace("\n", "\n    ");
-	}
+    public void setSeed(String seed) {
+        this.seed = seed;
+    }
+
+    @Override
+    public boolean equals(java.lang.Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        JobConfig jobConfig = (JobConfig) o;
+        return Objects.equals(this.tags, jobConfig.tags) &&
+                Objects.equals(this.config, jobConfig.config) &&
+                Objects.equals(this.seed, jobConfig.seed);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tags, config, seed);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class JobConfig {\n");
+        sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
+        sb.append("    config: ").append(toIndentedString(config)).append("\n");
+        sb.append("    seed: ").append(toIndentedString(seed)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(java.lang.Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 }

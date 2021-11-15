@@ -15,88 +15,115 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 @Validated
 public class TemplateParams {
-	@JsonProperty("params")
-	private Object params = null;
 
-	@JsonProperty("seed")
-	private String seed = null;
+    @JsonProperty("tags")
+    private String[] tags = new String[0];
 
-	public TemplateParams params(Object params) {
-		this.params = params;
-		return this;
-	}
+    @JsonProperty("params")
+    private Object params = null;
 
-	/**
-	 * Get params
-	 * 
-	 * @return params
-	 **/
-	@Schema
-	@NotNull
-	public Object getParams() {
-		return params;
-	}
+    @JsonProperty("seed")
+    private String seed = null;
 
-	public void setParams(Object params) {
-		this.params = params;
-	}
+    /**
+     * Get tags
+     * 
+     * @return tags
+     **/
+    @Schema
+    @NotNull
+    public String[] getTags() {
+        return tags;
+    }
 
-	public TemplateParams seed(String seed) {
-		this.seed = seed;
-		return this;
-	}
+    public void setTags(String[] tags) {
+        this.tags = tags;
+    }
 
-	/**
-	 * Get seed
-	 * 
-	 * @return seed
-	 **/
-	@Schema
-	@NotNull
-	public String getSeed() {
-		return seed;
-	}
+    public TemplateParams tags(String[] tags) {
+        this.tags = tags;
+        return this;
+    }
 
-	public void setSeed(String seed) {
-		this.seed = seed;
-	}
+    public TemplateParams params(Object params) {
+        this.params = params;
+        return this;
+    }
 
-	@Override
-	public boolean equals(java.lang.Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		TemplateParams templateParams = (TemplateParams) o;
-		return Objects.equals(this.params, templateParams.params) && Objects.equals(this.seed, templateParams.seed);
-	}
+    /**
+     * Get params
+     * 
+     * @return params
+     **/
+    @Schema
+    @NotNull
+    public Object getParams() {
+        return params;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(params, seed);
-	}
+    public void setParams(Object params) {
+        this.params = params;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("class TemplateParams {\n");
+    public TemplateParams seed(String seed) {
+        this.seed = seed;
+        return this;
+    }
 
-		sb.append("    params: ").append(toIndentedString(params)).append("\n");
-		sb.append("    seed: ").append(toIndentedString(seed)).append("\n");
-		sb.append("}");
-		return sb.toString();
-	}
+    /**
+     * Get seed
+     * 
+     * @return seed
+     **/
+    @Schema
+    @NotNull
+    public String getSeed() {
+        return seed;
+    }
 
-	/**
-	 * Convert the given object to string with each line indented by 4 spaces
-	 * (except the first line).
-	 */
-	private String toIndentedString(java.lang.Object o) {
-		if (o == null) {
-			return "null";
-		}
-		return o.toString().replace("\n", "\n    ");
-	}
+    public void setSeed(String seed) {
+        this.seed = seed;
+    }
+
+    @Override
+    public boolean equals(java.lang.Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TemplateParams templateParams = (TemplateParams) o;
+        return Objects.equals(this.tags, templateParams.tags) &&
+                Objects.equals(this.params, templateParams.params) &&
+                Objects.equals(this.seed, templateParams.seed);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(tags, params, seed);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class TemplateParams {\n");
+
+        sb.append("    tags: ").append(toIndentedString(tags)).append("\n");
+        sb.append("    params: ").append(toIndentedString(params)).append("\n");
+        sb.append("    seed: ").append(toIndentedString(seed)).append("\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Convert the given object to string with each line indented by 4 spaces
+     * (except the first line).
+     */
+    private String toIndentedString(java.lang.Object o) {
+        if (o == null) {
+            return "null";
+        }
+        return o.toString().replace("\n", "\n    ");
+    }
 }

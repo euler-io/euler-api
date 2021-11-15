@@ -30,6 +30,7 @@ public class JobGenerator {
         details.setCreationDate(OffsetDateTime.now());
         details.setStatus(JobStatus.NEW);
         details.setSeed(params.getSeed());
+        details.setTags(params.getTags());
         return details;
     }
 

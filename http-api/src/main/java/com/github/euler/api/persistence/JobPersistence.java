@@ -10,7 +10,7 @@ import com.github.euler.api.model.SortDirection;
 
 public interface JobPersistence {
 
-    JobList list(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus status) throws IOException;
+    JobList list(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus[] status, String[] tag) throws IOException;
 
     void updateStatus(String id, JobStatus status) throws IOException;
 

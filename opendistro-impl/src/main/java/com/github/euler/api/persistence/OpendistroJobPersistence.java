@@ -41,9 +41,9 @@ public abstract class OpendistroJobPersistence extends AbstractJobPersistence<Jo
     }
 
     @Override
-    public JobList list(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus status)
+    public JobList list(Integer page, Integer size, SortBy sortBy, SortDirection sortDirection, JobStatus[] status, String[] tags)
             throws IOException {
-        SearchResponse response = listJobs(page, size, sortBy, sortDirection, status, true);
+        SearchResponse response = listJobs(page, size, sortBy, sortDirection, status, tags, true);
         List<Job> jobs = Arrays.stream(response.getHits().getHits()).map(h -> convert(h)).collect(Collectors.toList());
         int total = Long.valueOf(response.getHits().getTotalHits().value).intValue();
 

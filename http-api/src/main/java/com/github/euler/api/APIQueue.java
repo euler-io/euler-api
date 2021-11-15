@@ -140,7 +140,7 @@ public class APIQueue extends AbstractBehavior<APICommand> {
         try {
             uri = new URI(jobDetails.getSeed());
             ref = spawn(jobDetails.getId(), config);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.warn("Error spawning job " + jobDetails.getId(), e);
         }
         if (ref != null) {
