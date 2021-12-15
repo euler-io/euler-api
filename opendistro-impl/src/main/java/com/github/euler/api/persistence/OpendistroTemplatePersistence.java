@@ -29,8 +29,7 @@ public abstract class OpendistroTemplatePersistence extends AbstractTemplatePers
         req.id(template.getName());
         req.source(Map.of(
                 "name", template.getName(),
-                "config", config.root().render(ConfigRenderOptions.concise()),
-                "tags", template.getTags()));
+                "config", config.root().render(ConfigRenderOptions.concise())));
         getClient().index(req, getRequestOptions());
         return template;
     }
@@ -61,10 +60,6 @@ public abstract class OpendistroTemplatePersistence extends AbstractTemplatePers
         String configStr = (String) source.get("config");
         Config config = ConfigFactory.parseString(configStr);
         templateDetails.setConfig(config);
-
-        if (source.containsKey("tags")) {
-            templateDetails.setTags((String[]) source.get("tags"));
-        }
 
         return templateDetails;
     }
