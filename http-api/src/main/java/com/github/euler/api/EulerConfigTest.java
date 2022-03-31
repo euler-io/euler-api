@@ -8,7 +8,11 @@ public class EulerConfigTest {
 
     public static void main(String[] args) {
         Config config = ConfigFactory.load();
-        System.out.println(config.root().render(ConfigRenderOptions.concise()));
+        ConfigRenderOptions options = ConfigRenderOptions.defaults();
+        options.setFormatted(true);
+        options.setJson(true);
+        options.setOriginComments(false);
+        System.out.println(config.root().render(options));
     }
 
 }
