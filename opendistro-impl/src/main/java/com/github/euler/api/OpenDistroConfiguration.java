@@ -23,6 +23,8 @@ import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +34,8 @@ import com.typesafe.config.ConfigException;
 
 @Configuration
 public class OpenDistroConfiguration {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final APIConfiguration configuration;
 
@@ -56,6 +60,7 @@ public class OpenDistroConfiguration {
             @Override
             public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
                 if (ca != null && !isAllowInsecure()) {
+                    LOGGER.info("Using CA: {}", ca);
                     try {
                         SSLContextBuilder custom = SSLContexts.custom();
                         custom.loadTrustMaterial(TrustStoreLoader.loadTrustStore(ca), new TrustSelfSignedStrategy());
@@ -65,6 +70,7 @@ public class OpenDistroConfiguration {
                     }
                 }
                 if (isAllowInsecure()) {
+                    LOGGER.warn("Using insecure requests to Elasticsearch.");
                     try {
                         SSLContext sc = SSLContext.getInstance("TLS");
                         sc.init(null, new TrustManager[] { new TrustAllX509TrustManager() }, new java.security.SecureRandom());
